@@ -1,5 +1,5 @@
 # Set main info
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1...3.28 FATAL_ERROR)
 
 project(WeatherWebApplication)
 
@@ -9,8 +9,19 @@ set_target_properties(${TARGET} PROPERTIES
     CXX_EXTENSIONS NO
 )
 
+# Set some variables
+set(REQUEST_MANAGER_DIR ./source/request_manager)
+
 
 # Create main targets
+add_subdirectory(${REQUEST_MANAGER_DIR})
+
+include_directories(${REQUEST_MANAGER_DIR})
+
+message("-- create main target")
+add_executable(main ./source/main.cpp)
+
+target_link_libraries(main PRIVATE request_manager_lib)
 
 
 # Find packages
@@ -29,20 +40,20 @@ find_package(nlohmann_json 3.1.0)
 # Link found packages
 if (Boost_FOUND)
     message("-- packages for Boost-1.55.0 and upper were found")
-    #include_directories(${Boost_INCLUDE_DIRS})
-    #target_link_libraries(main PRIVATE ${Boost_INCLUDE_LIBRARIES})
+    include_directories(${Boost_INCLUDE_DIRS})
+    target_link_libraries(main PRIVATE ${Boost_INCLUDE_LIBRARIES})
 endif()
 
 if (PostgreSQL_FOUND)
     message("-- packages for PostgreSQL-10.0 and upper were found")
-    #include_directories(${PostgreSQL_INCLUDE_DIRS})
-    #target_link_libraries(main PRIVATE PostgreSQL::PostgreSQL)
+    include_directories(${PostgreSQL_INCLUDE_DIRS})
+    target_link_libraries(main PRIVATE PostgreSQL::PostgreSQL)
 endif()
 
 if (nlohmann_json_FOUND)
-    message("-- packages for nloBoost-1.55.0hmann_json-3.1.0 and upper were found")
-    #include_directories(${nlohmann_json_INCLUDE_DIRS})
-    #target_link_libraries(main PRIVATE ${nlohmann_json_INCLUDE_LIBRARIES})
+    message("-- packages for nlohmann_json-3.1.0 and upper were found")
+    include_directories(${nlohmann_json_INCLUDE_DIRS})
+    target_link_libraries(main PRIVATE ${nlohmann_json_INCLUDE_LIBRARIES})
 endif()
 
 
