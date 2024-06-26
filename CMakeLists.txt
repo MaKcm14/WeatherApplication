@@ -12,16 +12,22 @@ set_target_properties(${TARGET} PROPERTIES
 # Set some variables
 set(REQUEST_MANAGER_DIR ./source/request_manager)
 
+set(LOGGER_DIR ./source/logger)
+
 
 # Create main targets
+add_subdirectory(${LOGGER_DIR})
+
 add_subdirectory(${REQUEST_MANAGER_DIR})
+
+include_directories(${LOGGER_DIR})
 
 include_directories(${REQUEST_MANAGER_DIR})
 
 message("-- create main target")
 add_executable(main ./source/main.cpp)
 
-target_link_libraries(main PRIVATE request_manager_lib)
+target_link_libraries(main PRIVATE request_manager_lib PUBLIC logger_lib)
 
 
 # Find packages
@@ -56,6 +62,7 @@ if (nlohmann_json_FOUND)
     target_link_libraries(main PRIVATE ${nlohmann_json_INCLUDE_LIBRARIES})
 endif()
 
+# TODO: make optimization for all CMakeLists.txt by separating the finding parts (after all managers will be completed)
 
 # Tests part
 if (ENABLE_TEST)

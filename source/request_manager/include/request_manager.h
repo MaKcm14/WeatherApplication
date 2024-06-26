@@ -1,6 +1,7 @@
 #ifndef REQUEST_MANAGER_HEADER
 
 #    include <boost/asio.hpp>
+#    include "logger.cpp"
 #    include <iostream>
 #    include <nlohmann/json.hpp>
 #    include <sstream>
@@ -8,6 +9,7 @@
 
 namespace NRequest {
 
+    TLogger logger;
     boost::asio::io_service service;
     boost::asio::ip::tcp::endpoint epRequest;
 
