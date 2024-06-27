@@ -4,12 +4,17 @@
 TLogger logger;
 
 int main() {
-    logger << ELevel::Info << "start server\n";
-    NRequest::TMRequest testRequest("Moscow");
+    try {
+        NRequest::TMRequest testRequest("Moscow");
 
-    NRequest::InitializeNetParams();
+        NRequest::InitializeNetParams();
 
-    std::cout << testRequest.GetWeather();
+        std::cout << testRequest.GetWeather();
+    } catch (NRequest::TRException& excp) {
+        std::cerr << excp.what() << std::endl;
+    } catch (...) {
+        std::cerr << "error was generated\n";
+    }
 
     return 0;
 }

@@ -26,6 +26,8 @@ namespace NRequest {
 
         std::string GetCelsus(std::string temp) const;
 
+        void InitApiKey();
+
     public:
         TMRequest(const std::string& city);
 
@@ -54,6 +56,7 @@ namespace NRequest {
         boost::asio::ip::tcp::socket SocketGeo;
         std::string City;
         std::string WeatherDesc;
+        std::string API_KEY;
     };
 
 }
