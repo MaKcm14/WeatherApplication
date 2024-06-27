@@ -1,27 +1,20 @@
-#ifndef LOGGER_SOURCE
+#include "include/logger.h"
 
-#    include "include/logger.h"
-
-template <class TType>
-TLogger& operator << (TLogger& logger, const TType& data) {
-    logger.LogOut << data;
-
-    return logger;
+TLogger::TLogger() 
+    : LogOut("log.txt")
+{
 }
+
 
 TLogger& operator << (TLogger& logger, const ELevel& lev) {
     if (lev == ELevel::Debug) {
-        logger.LogOut << "L: 'Debug': ";
+        logger.LogOut << "[Debug]: ";
     } else if (lev == ELevel::Info) {
-        logger.LogOut << "L: 'Info': ";
+        logger.LogOut << "[Info]: ";
     } else if (lev == ELevel::Warning) {
-        logger.LogOut << "L: 'Warning': ";
+        logger.LogOut << "[Warning]: ";
     } else if (lev == ELevel::Error) {
-        logger.LogOut << "L: 'Error': ";
+        logger.LogOut << "[Error]: ";
     }
     return logger;
 }
-
-#endif
-
-#define LOGGER_SOURCE

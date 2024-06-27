@@ -12,26 +12,23 @@ set_target_properties(${TARGET} PROPERTIES
 # Set some variables
 set(REQUEST_MANAGER_DIR ./source/request_manager)
 
-set(LOGGER_DIR ./source/logger)
-
 
 # Create main targets
-add_subdirectory(${LOGGER_DIR})
+include_directories(./source/request_manager/include)
+include_directories(./source/logger/include)
 
+add_subdirectory(./source/logger)
 add_subdirectory(${REQUEST_MANAGER_DIR})
-
-include_directories(${LOGGER_DIR})
-
-include_directories(${REQUEST_MANAGER_DIR})
 
 message("-- create main target")
 add_executable(main ./source/main.cpp)
 
-target_link_libraries(main PRIVATE request_manager_lib PUBLIC logger_lib)
+target_link_libraries(request_manager_lib PUBLIC logger_lib)
+target_link_libraries(main PRIVATE request_manager_lib)
 
 
 # Find packages
-set(nlohmann_json_DIR /usr/include/json/build)
+set(nlohmann_json_DIR ./source/nlohmann_json/build)
 
 message("-- find packages for Boost-1.55.0 and upper")
 find_package(Boost 1.55.0 COMPONENTS system regex REQUIRED)
@@ -47,7 +44,7 @@ find_package(nlohmann_json 3.1.0)
 if (Boost_FOUND)
     message("-- packages for Boost-1.55.0 and upper were found")
     include_directories(${Boost_INCLUDE_DIRS})
-    target_link_libraries(main PRIVATE ${Boost_INCLUDE_LIBRARIES})
+    target_link_libraries(request_manager_lib PUBLIC ${Boost_INCLUDE_LIBRARIES})
 endif()
 
 if (PostgreSQL_FOUND)
@@ -59,7 +56,7 @@ endif()
 if (nlohmann_json_FOUND)
     message("-- packages for nlohmann_json-3.1.0 and upper were found")
     include_directories(${nlohmann_json_INCLUDE_DIRS})
-    target_link_libraries(main PRIVATE ${nlohmann_json_INCLUDE_LIBRARIES})
+    target_link_libraries(request_manager_lib PUBLIC ${nlohmann_json_INCLUDE_LIBRARIES})
 endif()
 
 # TODO: make optimization for all CMakeLists.txt by separating the finding parts (after all managers will be completed)

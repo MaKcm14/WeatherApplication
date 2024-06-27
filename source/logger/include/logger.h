@@ -9,13 +9,11 @@
     Error
 };
 
+
 class TLogger {
 public:
 
-    TLogger() 
-    : LogOut("log.txt")
-    {
-    }
+    TLogger();
 
     template <class TType>
     friend TLogger& operator << (TLogger& logger, const TType& data);
@@ -25,6 +23,15 @@ public:
 private:
     std::ofstream LogOut;
 };
+
+
+template <class TType>
+TLogger& operator << (TLogger& logger, const TType& data) {
+    logger.LogOut << data;
+
+    return logger;
+}
+
 
 #endif
 

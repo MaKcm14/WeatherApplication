@@ -1,12 +1,31 @@
-#ifndef REQUEST_MANAGER_SOURCE
+#include "include/request_manager.h"
 
-#    include "./include/request_manager.h"
-#    include "request_exception.cpp"
-
-/// TODO: add logger and change output error description
+/// TODO: add some description to code for more information in logs
 /// TODO: check all code matches the Yandex code style
 /// TODO: check all code have maximum optimization
-/// TODO: check optimizations for build in CMakeLists.txt
+
+extern TLogger logger;
+
+namespace NRequest {
+    boost::asio::io_service service;
+    boost::asio::ip::tcp::endpoint epRequest;
+}
+
+
+NRequest::TMRequest::TMRequest(const std::string& city)
+    : SocketWeath(NRequest::service)
+    , SocketGeo(NRequest::service)
+    , City(city)
+{
+}
+
+
+NRequest::TMRequest::TMRequest()
+    : SocketWeath(NRequest::service)
+    , SocketGeo(NRequest::service)
+{
+}
+
 
 void NRequest::InitializeNetParams() {
     static bool isInit = false;
@@ -25,7 +44,7 @@ void NRequest::InitializeNetParams() {
         isInit = true;
         
     } catch (boost::system::system_error& excp) {
-        logger << ELevel::Error << "~ InitializeNetParams() error: " << excp.what() << '\n';
+        //logger << ELevel::Error << "~ InitializeNetParams() error: " << excp.what() << '\n';
         throw TRException(excp.what());
     }
 
@@ -60,6 +79,7 @@ std::string NRequest::TMRequest::GetCelsus(std::string temp) const {
 
 
 void NRequest::TMRequest::SetWeatherDesc(const nlohmann::json& weathJson) {
+    WeatherDesc.clear();
     try {
         WeatherDesc += "- Weather Main Description: ";
         WeatherDesc += weathJson.at("weather").at(0).at("description").dump() + "\n";
@@ -77,13 +97,13 @@ void NRequest::TMRequest::SetWeatherDesc(const nlohmann::json& weathJson) {
         WeatherDesc += weathJson.at("wind").at("gust").dump() + "\n";
 
     } catch (nlohmann::json::type_error& typeExcp) {
-        logger << "~ SetWeatherDesc() error: " << typeExcp.what() << '\n';
-        logger << "  error's id: " << typeExcp.id << '\n';
+        //logger << "~ SetWeatherDesc() error: " << typeExcp.what() << '\n';
+        //logger << "  error's id: " << typeExcp.id << '\n';
         throw TRException(typeExcp.what());
 
     } catch (nlohmann::json::parse_error& parseExcp) {
-        logger << "~ SetWeatherDesc() error: " << parseExcp.what() << '\n';
-        logger << "  error's id: " << parseExcp.id << '\n';
+        //logger << "~ SetWeatherDesc() error: " << parseExcp.what() << '\n';
+        //logger << "  error's id: " << parseExcp.id << '\n';
         throw TRException(parseExcp.what());
 
     }
@@ -110,7 +130,7 @@ std::string NRequest::TMRequest::GetCoordsJson(const std::string& city) {
         SocketGeo.read_some(boost::asio::buffer(coordsBuff));
 
     } catch (boost::system::system_error& excp) {
-        logger << "~ GetCoordsJson() error: " << excp.what() << '\n';
+        //logger << "~ GetCoordsJson() error: " << excp.what() << '\n';
         throw TRException(excp.what());
     }
 
@@ -128,17 +148,17 @@ std::unordered_map<std::string, std::string> NRequest::TMRequest::GetCoords(std:
         coords.at("lon") = jsonCoords.at(0).at("lon").dump();
 
     } catch (nlohmann::json::parse_error& excp) {
-        logger << "~ GetCoords() error: " << excp.what() << '\n';
-        logger << "  error' id: " << excp.id << '\n';
+        //logger << "~ GetCoords() error: " << excp.what() << '\n';
+        //logger << "  error' id: " << excp.id << '\n';
         throw TRException(excp.what());
 
     } catch (nlohmann::json::type_error& typeExcp) {
-        logger << "~ GetCoords() error: " << typeExcp.what() << '\n';
-        logger << "  error's id: " << typeExcp.id << '\n';
+        //logger << "~ GetCoords() error: " << typeExcp.what() << '\n';
+        //logger << "  error's id: " << typeExcp.id << '\n';
         throw TRException(typeExcp.what());
 
     } catch (std::exception& excp) {
-        logger << "~ GetCoords() error: " << excp.what() << '\n';
+        //logger << "~ GetCoords() error: " << excp.what() << '\n';
         throw TRException(excp.what());
 
     }
@@ -172,10 +192,10 @@ std::string NRequest::TMRequest::GetWeatherJson(
         SocketWeath.read_some(boost::asio::buffer(weathBuff));
 
     } catch (boost::system::system_error& excp) {
-        logger << "~ GetWeatherJson() error: " << excp.what() << '\n';
+        //logger << "~ GetWeatherJson() error: " << excp.what() << '\n';
         throw TRException(excp.what());
     } catch (std::exception& excp) {
-        logger << "~ GetWeatherJson() error: " << excp.what() << '\n';
+        //logger << "~ GetWeatherJson() error: " << excp.what() << '\n';
         throw TRException(excp.what());
     } 
 
@@ -197,14 +217,14 @@ std::string NRequest::TMRequest::GetWeather(const std::string& city) {
     } catch (nlohmann::json::parse_error& excp) {
         City.clear();
         WeatherDesc.clear();
-        logger << "~ GetWeather() error: " << excp.what() << '\n';
-        logger << "  error's id: " << excp.id << '\n';
+        //logger << "~ GetWeather() error: " << excp.what() << '\n';
+        //logger << "  error's id: " << excp.id << '\n';
         throw TRException(excp.what());
     } catch (nlohmann::json::type_error& typeExcp) {
         City.clear();
         WeatherDesc.clear();
-        logger << "~ GetWeather() error: " << typeExcp.what() << '\n';
-        logger << "  error's id: " << typeExcp.id << '\n';
+        //logger << "~ GetWeather() error: " << typeExcp.what() << '\n';
+        //logger << "  error's id: " << typeExcp.id << '\n';
         throw TRException(typeExcp.what());
     }
 
@@ -219,8 +239,3 @@ std::string NRequest::TMRequest::GetWeather() {
         throw std::invalid_argument("the member City is empty");
     }
 }
-
-
-#endif
-
-#define REQUEST_MANAGER_SOURCE

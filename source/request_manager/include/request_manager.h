@@ -1,17 +1,14 @@
 #ifndef REQUEST_MANAGER_HEADER
 
 #    include <boost/asio.hpp>
-#    include "logger.cpp"
 #    include <iostream>
 #    include <nlohmann/json.hpp>
+#    include "request_exception.h"
+#    include "logger.h"
 #    include <sstream>
 #    include <unordered_map>
 
 namespace NRequest {
-
-    TLogger logger;
-    boost::asio::io_service service;
-    boost::asio::ip::tcp::endpoint epRequest;
 
     void InitializeNetParams();
 
@@ -30,18 +27,9 @@ namespace NRequest {
         std::string GetCelsus(std::string temp) const;
 
     public:
-        TMRequest(const std::string& city)
-        : SocketWeath(NRequest::service)
-        , SocketGeo(NRequest::service)
-        , City(city)
-        {
-        }
+        TMRequest(const std::string& city);
 
-        TMRequest() 
-        : SocketWeath(NRequest::service)
-        , SocketGeo(NRequest::service)
-        {
-        }
+        TMRequest();
 
         ~TMRequest() {
             SocketWeath.close();
@@ -69,6 +57,7 @@ namespace NRequest {
     };
 
 }
+
 
 #endif
 
