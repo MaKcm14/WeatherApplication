@@ -2,9 +2,9 @@
 
 #    include <fstream>
 
+/// @brief Simple logger class for make notes about events in the programme
 class TLogger {
 public:
-    /// @brief Levels of the log's information
     enum ELevel {
         Debug,
         Info,
@@ -16,7 +16,6 @@ private:
     std::ofstream LogOut;
 
 public:
-
     TLogger();
 
     template <typename TType>
