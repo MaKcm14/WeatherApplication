@@ -12,6 +12,7 @@ set_target_properties(${TARGET} PROPERTIES
 # Set some variables
 set(REQUEST_MANAGER_DIR ./source/request_manager)
 set(LOGGER_DIR ./source/logger)
+set(ENABLE_TEST TRUE)
 
 # Create main targets
 include_directories(./source/request_manager/include)
@@ -30,13 +31,13 @@ target_link_libraries(main PRIVATE request_manager_lib)
 # Find packages
 set(nlohmann_json_DIR ./source/nlohmann_json/build)
 
-message("-- find packages for Boost-1.55.0 and upper")
+message("\n-- find packages for Boost-1.55.0 and upper")
 find_package(Boost 1.55.0 COMPONENTS system regex REQUIRED)
 
 message("-- find packages for PostgreSQL-10.0 and upper")
 find_package(PostgreSQL 10.0)
 
-message("-- find packages for nlohmann_json-3.1.0 and upper")
+message("-- find packages for nlohmann_json-3.1.0 and upper\n")
 find_package(nlohmann_json 3.1.0)
 
 
@@ -54,7 +55,7 @@ if (PostgreSQL_FOUND)
 endif()
 
 if (nlohmann_json_FOUND)
-    message("-- packages for nlohmann_json-3.1.0 and upper were found")
+    message("-- packages for nlohmann_json-3.1.0 and upper were found\n")
     include_directories(${nlohmann_json_INCLUDE_DIRS})
     target_link_libraries(request_manager_lib PUBLIC ${nlohmann_json_INCLUDE_LIBRARIES})
 endif()
@@ -63,7 +64,21 @@ endif()
 
 # Tests part
 if (ENABLE_TEST)
-    message("-- enable testing for WeatherWebApplication")
-    enable_testing()
-endif()
+    message("-- Tests are enabled")
 
+    # Find GoogleTest
+    message("\n-- find packages for GoogleTest")
+    find_package(GTest REQUIRED)
+    
+    # Link found GTest
+    if (GTest_FOUND)
+        include(GoogleTest)
+        message("-- packages for GTest were found")
+
+        message("\n-- enable testing for WeatherWebApplication")
+        enable_testing()
+        add_subdirectory(./tests)
+
+    endif()
+
+endif()
