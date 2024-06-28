@@ -6,15 +6,19 @@ TLogger::TLogger()
 }
 
 
-TLogger& operator << (TLogger& logger, const ELevel& lev) {
-    if (lev == ELevel::Debug) {
+TLogger& operator << (TLogger& logger, const TLogger::ELevel& lev) {
+    if (lev == TLevel::Debug) {
         logger.LogOut << "[Debug]: ";
-    } else if (lev == ELevel::Info) {
+
+    } else if (lev == TLevel::Info) {
         logger.LogOut << "[Info]: ";
-    } else if (lev == ELevel::Warning) {
+
+    } else if (lev == TLevel::Warning) {
         logger.LogOut << "[Warning]: ";
-    } else if (lev == ELevel::Error) {
+
+    } else if (lev == TLevel::Error) {
         logger.LogOut << "[Error]: ";
+        
     }
     return logger;
 }

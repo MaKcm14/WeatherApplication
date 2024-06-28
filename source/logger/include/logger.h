@@ -2,33 +2,37 @@
 
 #    include <fstream>
 
- enum class ELevel {
-    Debug,
-    Info,
-    Warning,
-    Error
-};
-
-
 class TLogger {
+public:
+    /// @brief Levels of the log's information
+    enum ELevel {
+        Debug,
+        Info,
+        Warning,
+        Error
+    };
+
+private:
+    std::ofstream LogOut;
+
 public:
 
     TLogger();
 
-    template <class TType>
+    template <typename TType>
     friend TLogger& operator << (TLogger& logger, const TType& data);
 
-    friend TLogger& operator << (TLogger& logger, const ELevel& lev);
-
-private:
-    std::ofstream LogOut;
+    friend TLogger& operator << (TLogger& logger, const TLogger::ELevel& lev);
+    
 };
 
 
-template <class TType>
+using TLevel = TLogger::ELevel;
+
+template <typename TType>
 TLogger& operator << (TLogger& logger, const TType& data) {
     logger.LogOut << data;
-
+    
     return logger;
 }
 

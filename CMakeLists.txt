@@ -11,13 +11,13 @@ set_target_properties(${TARGET} PROPERTIES
 
 # Set some variables
 set(REQUEST_MANAGER_DIR ./source/request_manager)
-
+set(LOGGER_DIR ./source/logger)
 
 # Create main targets
 include_directories(./source/request_manager/include)
 include_directories(./source/logger/include)
 
-add_subdirectory(./source/logger)
+add_subdirectory(${LOGGER_DIR})
 add_subdirectory(${REQUEST_MANAGER_DIR})
 
 message("-- create main target")

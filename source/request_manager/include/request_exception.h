@@ -5,10 +5,11 @@
 
 namespace NRequest {
 
+    /// @brief Exceptions specially for request actions
     class TRException : public std::exception {
     public:
         TRException(const std::string& description)
-        : What(description)
+            : What(description)
         {
         }
 
@@ -18,7 +19,9 @@ namespace NRequest {
 
     private:
         std::string What;
+
     };
+
 
 }
 
