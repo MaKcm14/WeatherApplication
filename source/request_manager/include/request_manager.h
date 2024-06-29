@@ -58,13 +58,15 @@ namespace NRequest {
 
         void SetWeatherDesc(const nlohmann::json& weathJson);
 
+        std::string GetRightCityName(const std::string& city) const noexcept;
+
     private:
         std::string ApiKey;
         TTcpSocket SocketWeath;
         TTcpSocket SocketGeo;
         std::string City;
         std::string WeatherDesc;
-
+        
     };
 
 

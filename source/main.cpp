@@ -4,7 +4,7 @@
 TLogger logger;
 
 int main() {
-    NRequest::TMRequest request("Ulan-Ude");
+    NRequest::TMRequest request("Saint Petersburg");
 
     try {
          std::cout << request.GetWeather();

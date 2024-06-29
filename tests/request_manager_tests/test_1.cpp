@@ -58,14 +58,14 @@ TEST(Request_Manager_Tests, City_Kazan) {
 }
 
 
-TEST(Request_Manager_Tests, DISABLED_City_Saint_Petersburg) {
-    NRequest::TMRequest testRequest1("SaintPetersburg");
+TEST(Request_Manager_Tests, City_Saint_Petersburg) {
+    NRequest::TMRequest testRequest1("Saint Petersburg");
     NRequest::TMRequest testRequest2;
 
     for (bool noThrow = false; !noThrow; ) {
         try {
             testRequest1.GetWeather();
-            testRequest2.GetWeather("SaintPetersburg");
+            testRequest2.GetWeather("Saint Petersburg");
             noThrow = true;
 
         } catch (NRequest::TRException& excp) {

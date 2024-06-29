@@ -3,8 +3,6 @@
 #    include <exception>
 #    include <string>
 
-///TODO: make 2 derived classes from TRException: TServerException, TClientException
-
 namespace NRequest {
 
     /// @brief Exceptions specially for request actions
@@ -38,7 +36,6 @@ namespace NRequest {
         int32_t ErrorId;
 
     };
-
 
 }
 
