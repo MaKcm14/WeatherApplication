@@ -1,3 +1,7 @@
+/// TODO: check all the parameters you use in the description of th weather can be always in the json (gust - not)
+/// INFO: you must always have catch (...) that your logger can write all info in the file
+/// CHECK: once connect sockets has improve the productivity (add once connection with buffer clearing)
+
 #include "include/request_manager.h"
 
 extern TLogger logger;
@@ -13,6 +17,7 @@ NRequest::TMRequest::TMRequest()
     : SocketWeath(NRequest::service)
     , SocketGeo(NRequest::service)
 {
+    InitializeNetParams();
     InitApiKey();
 }
 
@@ -22,6 +27,7 @@ NRequest::TMRequest::TMRequest(const std::string& city)
     , SocketGeo(NRequest::service)
     , City(city)
 {
+    InitializeNetParams();
     InitApiKey();
 }
 
@@ -31,14 +37,14 @@ void NRequest::TMRequest::InitApiKey() {
 
     if (!apiStream.is_open()) {
         logger << TLevel::Error << "file with API_KEY wasn't opened\n\n";
-        throw TRException("can't open the API_KEY.txt");
+        throw TRException("can't open the API_KEY.txt", 402);
     }
 
     apiStream >> NRequest::TMRequest::ApiKey;
 }
 
 
-void NRequest::InitializeNetParams() {
+static void NRequest::InitializeNetParams() {
     static bool isInit = false;
     if (isInit) {
         return;
@@ -58,7 +64,7 @@ void NRequest::InitializeNetParams() {
         
     } catch (boost::system::system_error& excp) {
         logger << TLevel::Error << "~ InitializeNetParams() error: " << excp.what() << "\n\n";
-        throw TRException(excp.what());
+        throw TRException(excp.what(), 501);
     }
 
 }
@@ -117,13 +123,12 @@ void NRequest::TMRequest::SetWeatherDesc(const nlohmann::json& weathJson) {
     } catch (nlohmann::json::type_error& typeExcp) {
         logger << TLevel::Error << "~ SetWeatherDesc() error: " << typeExcp.what() << "\n";
         logger << TLevel::Error << "\terror's id: " << typeExcp.id << "\n\n";
-
-        throw TRException(typeExcp.what());
+        throw TRException(typeExcp.what(), 502);
 
     } catch (nlohmann::json::parse_error& parseExcp) {
         logger << TLevel::Error << "~ SetWeatherDesc() error: " << parseExcp.what() << "\n";
         logger << TLevel::Error << "  error's id: " << parseExcp.id << "\n\n";
-        throw TRException(parseExcp.what());
+        throw TRException(parseExcp.what(), 502);
     }
 }
 
@@ -144,6 +149,7 @@ std::string NRequest::TMRequest::GetCoordsJson() {
         url += ApiKey;
 
         SocketGeo.connect(NRequest::epRequest);
+        SocketWeath.connect(NRequest::epRequest);
 
         requestStream << "GET " << url << "\r\n";
         requestStream << "Host: api.openweathermap.org\r\n";
@@ -159,9 +165,18 @@ std::string NRequest::TMRequest::GetCoordsJson() {
         logger << "'api.openweathermap.org' (geo-service):\n";
         logger << coordsBuff.substr(0, coordsBuff.find('\0')) << "\n\n";
 
+        SocketGeo.close();
+        SocketWeath.close();
+
+        if (coordsBuff.empty()) {
+            logger << TLevel::Error << "the coordinates from 'api.openweathermap.org' ";
+            logger << "(geo-service) are empty\n";
+            throw TRException("client-side error", 401);
+        }
+
     } catch (boost::system::system_error& excp) {
         logger << TLevel::Error << "~ GetCoordsJson() error: " << excp.what() << "\n\n";
-        throw TRException(excp.what());
+        throw TRException(excp.what(), 501);
     }
 
     return coordsBuff;
@@ -178,6 +193,12 @@ auto NRequest::TMRequest::GetCoords(const std::string& jsonStrCoords) const {
 
         jsonCoords = std::move(nlohmann::json::parse(jsonStrCoords));
 
+        if (jsonCoords.at(0).at("name").dump() != ("\"" + City + "\"")) {
+            logger << TLevel::Error << "the json with coordinates doesn't describe the city '";
+            logger << City << "'\n\n";
+            throw TRException("the invalid name of the city", 401);
+        }
+
         coords.at("lat") = jsonCoords.at(0).at("lat").dump();
         coords.at("lon") = jsonCoords.at(0).at("lon").dump();
 
@@ -187,18 +208,19 @@ auto NRequest::TMRequest::GetCoords(const std::string& jsonStrCoords) const {
     } catch (nlohmann::json::parse_error& excp) {
         logger << TLevel::Error << "~ GetCoords() error: " << excp.what() << "\n";
         logger << TLevel::Error << "  error' id: " << excp.id << "\n\n";
-
-        throw TRException(excp.what());
+        throw TRException(excp.what(), 502);
 
     } catch (nlohmann::json::type_error& typeExcp) {
         logger << TLevel::Error << "~ GetCoords() error: " << typeExcp.what() << "\n";
         logger << TLevel::Error << "  error's id: " << typeExcp.id << "\n\n";
+        throw TRException(typeExcp.what(), 502);
 
-        throw TRException(typeExcp.what());
+    } catch (TRException& excp) {
+        throw;
 
     } catch (std::exception& excp) {
         logger << TLevel::Error << "~ GetCoords() error: " << excp.what() << "\n\n";
-        throw TRException(excp.what());
+        throw TRException(excp.what(), 503);
     }
     
     return coords;
@@ -221,6 +243,7 @@ auto NRequest::TMRequest::GetWeatherJson(const std::unordered_map<std::string, s
         url += "&appid=";
         url += ApiKey;
 
+        SocketGeo.connect(NRequest::epRequest);
         SocketWeath.connect(NRequest::epRequest);
 
         requestStream << "GET " << url << "\r\n";
@@ -237,13 +260,19 @@ auto NRequest::TMRequest::GetWeatherJson(const std::unordered_map<std::string, s
         logger << "(weather-service)\n";
         logger << TLevel::Debug << weathBuff.substr(0, weathBuff.find('\0')) << "\n\n";
 
+        SocketGeo.close();
+        SocketWeath.close();
+
     } catch (boost::system::system_error& excp) {
         logger << TLevel::Error << "~ GetWeatherJson() error: " << excp.what() << "\n\n";
-        throw TRException(excp.what());
+        throw TRException(excp.what(), 501);
+
+    } catch (TRException& excp) {
+        throw;
 
     } catch (std::exception& excp) {
         logger << TLevel::Error << "~ GetWeatherJson() error: " << excp.what() << "\n\n";
-        throw TRException(excp.what());
+        throw TRException(excp.what(), 503);
     } 
 
    return weathBuff;
@@ -270,20 +299,18 @@ std::string NRequest::TMRequest::GetWeather(std::string city) {
         WeatherDesc.clear();
         logger << TLevel::Error << "~ GetWeather() error: " << excp.what() << "\n";
         logger << TLevel::Error << "  error's id: " << excp.id << "\n\n";
-
-        throw TRException(excp.what());
+        throw TRException(excp.what(), 502);
 
     } catch (nlohmann::json::type_error& typeExcp) {
         City.clear();
         WeatherDesc.clear();
         logger << TLevel::Error << "~ GetWeather() error: " << typeExcp.what() << "\n";
         logger << TLevel::Error << "  error's id: " << typeExcp.id << "\n\n";
-
-        throw TRException(typeExcp.what());
+        throw TRException(typeExcp.what(), 502);
     }
 
     logger << TLevel::Debug << "the weather description was successfully made:\n";
-    logger << TLevel::Debug << WeatherDesc << "\n";
+    logger << WeatherDesc << "\n";
 
     return WeatherDesc;
 }
@@ -294,6 +321,6 @@ std::string NRequest::TMRequest::GetWeather() {
         return GetWeather(City);
     } else {
         logger << TLevel::Error << "got invalid argument for city\n";
-        throw std::invalid_argument("the member City is empty");
+        throw TRException("the member City is empty", 401);
     }
 }

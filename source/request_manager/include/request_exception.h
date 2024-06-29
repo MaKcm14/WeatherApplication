@@ -3,14 +3,30 @@
 #    include <exception>
 #    include <string>
 
+///TODO: make 2 derived classes from TRException: TServerException, TClientException
+
 namespace NRequest {
 
     /// @brief Exceptions specially for request actions
+    /// ~ error's id classification:
+    /// - 400 - client's errors:
+    ///       - 401: (invalid data)
+    ///       - 402: (data can't be read)
+    ///
+    /// - 500 - server-side's errors:
+    ///       - 501: (boost::asio exceptions)
+    ///       - 502: (nlohmann::json exceptions)
+    ///       - 503: (STL exceptions)
     class TRException : public std::exception {
     public:
-        TRException(const std::string& description)
+        TRException(const std::string& description, int32_t errorId = 500)
             : What(description)
+            , ErrorId(errorId)
         {
+        }
+
+        int32_t GetErrorId() const noexcept {
+            return ErrorId;
         }
 
         const char* what() const noexcept override {
@@ -19,6 +35,7 @@ namespace NRequest {
 
     private:
         std::string What;
+        int32_t ErrorId;
 
     };
 

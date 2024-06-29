@@ -10,7 +10,7 @@
 
 namespace NRequest {
 
-    void InitializeNetParams();
+    static void InitializeNetParams();
 
     /// @brief Let make requests for 'api.openweathermap.org'
     class TMRequest {
@@ -22,8 +22,8 @@ namespace NRequest {
         TMRequest(const std::string& city);
 
         ~TMRequest() {
-            SocketWeath.close();
             SocketGeo.close();
+            SocketWeath.close();
         }
 
         std::string GetWeather();

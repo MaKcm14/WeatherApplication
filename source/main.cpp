@@ -4,17 +4,14 @@
 TLogger logger;
 
 int main() {
+    NRequest::TMRequest request("Ulan-Ude");
+
     try {
-        NRequest::TMRequest testRequest("Moscow");
-        NRequest::InitializeNetParams();
-
-        std::cout << testRequest.GetWeather();
-
+         std::cout << request.GetWeather();
     } catch (NRequest::TRException& excp) {
-        std::cerr << excp.what() << std::endl;
-
+        std::cerr << excp.what();
     } catch (...) {
-        std::cerr << "error was generated\n";
+        
     }
 
     return 0;

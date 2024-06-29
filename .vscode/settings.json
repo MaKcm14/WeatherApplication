@@ -78,6 +78,10 @@
         "valarray": "cpp",
         "variant": "cpp",
         "format": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "bitset": "cpp",
+        "cfenv": "cpp",
+        "regex": "cpp",
+        "stdfloat": "cpp"
     }
 }
