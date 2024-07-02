@@ -178,7 +178,7 @@ std::string NRequest::TMRequest::GetCoordsJson() {
 
         SocketGeo.close();
 
-        if (coordsBuff.empty()) {
+        if ((coordsBuff.substr(0, coordsBuff.find('\0'))).size() == 2) {
             logger << TLevel::Error << "the coordinates from 'api.openweathermap.org' ";
             logger << "(geo-service) are empty\n";
             throw TRException("client-side error", 401);

@@ -21,3 +21,8 @@ target_link_libraries(r_m_test_1 PRIVATE gtest_main gtest)
 add_executable(r_m_test_2 test_2.cpp)
 target_link_libraries(r_m_test_2 PRIVATE request_manager_lib PRIVATE logger_lib)
 target_link_libraries(r_m_test_2 PRIVATE gtest_main gtest)
+
+# Test_3
+add_executable(r_m_test_3 test_3.cpp)
+target_link_libraries(r_m_test_3 PRIVATE request_manager_lib PRIVATE logger_lib)
+target_link_libraries(r_m_test_3 PRIVATE gtest_main gtest)

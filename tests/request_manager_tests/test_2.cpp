@@ -17,11 +17,11 @@ TEST(Request_Manager_Tests, Town_Bugulma) {
         } catch (NRequest::TRException& excp) {
             std::cerr << excp.what() << std::endl;
             if (excp.GetErrorId() >= 401 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
-                ADD_FAILURE();
+                FAIL();
             }
 
         } catch (...) {
-            ADD_FAILURE();
+            FAIL();
         }
     }
     ASSERT_NE(testRequest1.GetWeather().size(), 0);
@@ -44,11 +44,11 @@ TEST(Request_Manager_Tests, Town_Sochi) {
         } catch (NRequest::TRException& excp) {
             std::cerr << excp.what() << std::endl;
             if (excp.GetErrorId() >= 401 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
-                ADD_FAILURE();
+                FAIL();
             }
 
         } catch (...) {
-            ADD_FAILURE();
+            FAIL();
         }
     }
     ASSERT_NE(testRequest1.GetWeather().size(), 0);
@@ -71,11 +71,11 @@ TEST(Request_Manager_Tests, Town_Almetyevsk) {
         } catch (NRequest::TRException& excp) {
             std::cerr << excp.what() << std::endl;
             if (excp.GetErrorId() >= 401 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
-                ADD_FAILURE();
+                FAIL();
             }
 
         } catch (...) {
-            ADD_FAILURE();
+            FAIL();
         }
     }
     ASSERT_NE(testRequest1.GetWeather().size(), 0);
@@ -98,11 +98,11 @@ TEST(Request_Manager_Tests, Town_Nizhnekamsk) {
         } catch (NRequest::TRException& excp) {
             std::cerr << excp.what() << std::endl;
             if (excp.GetErrorId() >= 401 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
-                ADD_FAILURE();
+                FAIL();
             }
 
         } catch (...) {
-            ADD_FAILURE();
+            FAIL();
         }
     }
     ASSERT_NE(testRequest1.GetWeather().size(), 0);
@@ -125,11 +125,11 @@ TEST(Request_Manager_Tests, Town_Tver) {
         } catch (NRequest::TRException& excp) {
             std::cerr << excp.what() << std::endl;
             if (excp.GetErrorId() >= 401 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
-                ADD_FAILURE();
+                FAIL();
             }
 
         } catch (...) {
-            ADD_FAILURE();
+            FAIL();
         }
     }
     ASSERT_NE(testRequest1.GetWeather().size(), 0);
@@ -152,11 +152,11 @@ TEST(Request_Manager_Tests, City_Ulan_Ude) {
         } catch (NRequest::TRException& excp) {
             std::cerr << excp.what() << std::endl;
             if (excp.GetErrorId() >= 401 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
-                ADD_FAILURE();
+                FAIL();
             }
 
         } catch (...) {
-            ADD_FAILURE();
+            FAIL();
         }
     }
     ASSERT_NE(testRequest1.GetWeather().size(), 0);
