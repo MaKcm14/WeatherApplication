@@ -1,6 +1,7 @@
 #ifndef REQUEST_MANAGER_HEADER
 
 #    include <boost/asio.hpp>
+#    include <fstream>
 #    include <iostream>
 #    include "logger.h"
 #    include <nlohmann/json.hpp>
@@ -10,18 +11,22 @@
 
 namespace NRequest {
 
-    static void InitializeNetParams();
+    nlohmann::json configJson;
+
+    static void InitNetParams();
+
+    void InitConfig();
 
     /// @brief Let make requests for 'api.openweathermap.org'
-    class TMRequest {
+    class TRequestManager {
     public:
         using TTcpSocket = boost::asio::ip::tcp::socket;
 
-        TMRequest();
+        TRequestManager();
 
-        TMRequest(const std::string& city);
+        TRequestManager(const std::string& city);
 
-        ~TMRequest() {
+        ~TRequestManager() {
             SocketGeo.close();
             SocketWeath.close();
         }
@@ -44,8 +49,6 @@ namespace NRequest {
         }
 
     private:
-        void InitApiKey();
-        
         std::string GetCoordsJson();
 
         auto GetCoords(const std::string& jsonStrCoords) const;

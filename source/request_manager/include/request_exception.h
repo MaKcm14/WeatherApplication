@@ -10,14 +10,15 @@ namespace NRequest {
     /// - 400 - client's errors:
     ///       - 401: (invalid data)
     ///       - 402: (data can't be read)
+    ///       - 403: (can't set the connection)
     ///
     /// - 500 - server-side's errors:
     ///       - 501: (boost::asio exceptions)
     ///       - 502: (nlohmann::json exceptions)
     ///       - 503: (STL exceptions)
-    class TRException : public std::exception {
+    class TRequestException : public std::exception {
     public:
-        TRException(const std::string& description, int32_t errorId = 500)
+        TRequestException(const std::string& description, int32_t errorId = 500)
             : What(description)
             , ErrorId(errorId)
         {

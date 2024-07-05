@@ -18,6 +18,9 @@ TLogger& operator << (TLogger& logger, const TLogger::ELevel& lev) {
 
     } else if (lev == TLevel::Error) {
         logger.LogOut << "[Error]: ";
+        
+    } else if (lev == TLevel::Fatal) {
+        logger.LogOut << "[Fatal]: ";
     }
     return logger;
 }

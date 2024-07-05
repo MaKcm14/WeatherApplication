@@ -9,7 +9,8 @@ public:
         Debug,
         Info,
         Warning,
-        Error
+        Error,
+        Fatal
     };
 
 private:

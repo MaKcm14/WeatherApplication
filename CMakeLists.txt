@@ -11,22 +11,26 @@ set_target_properties(${TARGET} PROPERTIES
 message("-- Configuring has begun")
 
 # Setting some variables
-set(REQUEST_MANAGER_DIR ./source/request_manager)
 set(LOGGER_DIR ./source/logger)
-set(ENABLE_TEST TRUE)
+set(REQUEST_MANAGER_DIR ./source/request_manager)
+set(CACHE_MANAGER_DIR ./source/cache_manager)
+set(ENABLE_TEST FALSE)
 
 
 # Creating main targets
 include_directories(./source/request_manager/include)
 include_directories(./source/logger/include)
+include_directories(./source/cache_manager/include)
 
 add_subdirectory(${LOGGER_DIR})
 add_subdirectory(${REQUEST_MANAGER_DIR})
+add_subdirectory(${CACHE_MANAGER_DIR})
 
 message("-- creating main target")
 add_executable(main ./source/main.cpp)
 
 target_link_libraries(request_manager_lib PUBLIC logger_lib)
+target_link_libraries(main PRIVATE cache_manager_lib)
 target_link_libraries(main PRIVATE request_manager_lib)
 
 
@@ -53,6 +57,7 @@ endif()
 if (PostgreSQL_FOUND)
     message("-- packages for PostgreSQL-10.0 and upper were found")
     include_directories(${PostgreSQL_INCLUDE_DIRS})
+    target_link_libraries(cache_manager_lib PRIVATE PostgreSQL::PostgreSQL)
     target_link_libraries(main PRIVATE PostgreSQL::PostgreSQL)
 endif()
 
@@ -80,4 +85,8 @@ if (ENABLE_TEST)
         add_subdirectory(./tests)
 
         endif()
+
+else ()
+    message("-- Tests are NOT enabled")
+
 endif()
