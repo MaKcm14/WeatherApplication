@@ -1,3 +1,4 @@
+#include <iostream>
 #include "logger.h"
 #include "cache_manager.h"
 
@@ -17,6 +18,10 @@ int main() {
     try {
         NRequest::InitConfig();
         NRequest::TCacheManager manager;
+
+        auto res = manager.CheckData("Moscow");
+        std::cout << std::boolalpha << std::endl << res;
+
     } catch (...) {
         return 1;   
     }
