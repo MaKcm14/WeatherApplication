@@ -5,18 +5,20 @@
 
 namespace NRequest {
 
-    /// @brief Exceptions specially for request actions
+    /// @brief Exceptions specially for request actions (include cache's actions)
     /// ~ error's id classification:
     /// - 400 - client's errors:
     ///       - 401: (invalid data)
-    ///       - 402: (data can't be read)
-    ///       - 403: (can't set the connection)
+    ///       - 402: (data can't be read from the source)
+    ///       - 403: (can't set the connection with the server)
     ///
     /// - 500 - server-side's errors:
     ///       - 501: (boost::asio exceptions)
     ///       - 502: (nlohmann::json exceptions)
     ///       - 503: (STL exceptions)
     ///       - 504: (PostgreSQL excetptions)
+    ///       - 505: (the request wasn't processed correctly)
+    
     class TRequestException : public std::exception {
     public:
         TRequestException(const std::string& description, int32_t errorId = 500)

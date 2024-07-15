@@ -14,7 +14,7 @@ message("-- Configuring has begun")
 set(LOGGER_DIR ./source/logger)
 set(REQUEST_MANAGER_DIR ./source/request_manager)
 set(CACHE_MANAGER_DIR ./source/cache_manager)
-set(ENABLE_TEST FALSE)
+set(ENABLE_TEST TRUE)
 
 
 # Creating main targets
@@ -57,8 +57,7 @@ endif()
 if (PostgreSQL_FOUND)
     message("-- packages for PostgreSQL-10.0 and upper were found")
     include_directories(${PostgreSQL_INCLUDE_DIRS})
-    target_link_libraries(cache_manager_lib PRIVATE PostgreSQL::PostgreSQL)
-    target_link_libraries(main PRIVATE PostgreSQL::PostgreSQL)
+    target_link_libraries(cache_manager_lib PUBLIC PostgreSQL::PostgreSQL)
 endif()
 
 if (nlohmann_json_FOUND)
@@ -70,7 +69,7 @@ endif()
 
 # Tests part
 if (ENABLE_TEST)
-    message("-- Tests are enabled")
+    message("-- Tests are ENABLED")
     
     # Finding GTest
     message("-- finding packages for GTest")
@@ -87,6 +86,6 @@ if (ENABLE_TEST)
         endif()
 
 else ()
-    message("-- Tests are NOT enabled")
+    message("-- Tests are NOT ENABLED")
 
 endif()

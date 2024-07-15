@@ -3,6 +3,8 @@
 extern TLogger logger;
 
 namespace NRequest {
+    //std::mutex loggerMut;
+    nlohmann::json configJson;
     boost::asio::io_service service;
     boost::asio::ip::tcp::endpoint epRequest;
 }
@@ -11,10 +13,11 @@ namespace NRequest {
 void NRequest::InitConfig() {
     std::ifstream configStream("../configuration.json");
     
-    logger << TLevel::Info << "openning the file with configuration\n";
+    logger << TLevel::Info << "began openning the file with configuration\n";
 
     if (!configStream.is_open()) {
-        logger << TLevel::Fatal << "file with configuration of the programme wasn't opened\n\n";
+        logger << TLevel::Fatal << "~ InitConfig() error: ";
+        logger << "file with configuration of the programme wasn't opened\n\n";
         throw TRequestException("can't open the configuration.json", 402);
     }
 
@@ -23,7 +26,8 @@ void NRequest::InitConfig() {
         configStream >> configJson;
 
     } catch (nlohmann::json::parse_error& parseExcp) {
-        logger << TLevel::Fatal << "error while the deserealization of the configuration.json:\n\t";
+        logger << TLevel::Fatal;
+        logger << "~ InitConfig() error: during the deserealization of the configuration.json:\n\t";
         logger << parseExcp.what() << "\n\terror's id: " << parseExcp.id << "\n\n";
         throw TRequestException(parseExcp.what(), 502);
     }
@@ -32,15 +36,10 @@ void NRequest::InitConfig() {
 }
 
 
-static void NRequest::InitNetParams() {
-    static bool isInit = false;
-    if (isInit) {
-        return;
-    }
+void NRequest::InitNetParams() {
+    logger << TLevel::Info << "began receiving the ip from resolver for 'api.openweathermap.org'\n";
 
     try {
-        logger << TLevel::Info << "began receiving the ip from resolver for 'api.openweathermap.org'\n";
-
         boost::asio::ip::tcp::resolver resolver(service);
         boost::asio::ip::tcp::resolver::query query("api.openweathermap.org", "80");
         boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
@@ -48,13 +47,48 @@ static void NRequest::InitNetParams() {
         logger << TLevel::Info << "got ip for domen 'api.openweathermap.org' from resolver\n";
        
         NRequest::epRequest = std::move(*iter);
-        isInit = true;
-        
+
     } catch (boost::system::system_error& excp) {
-        logger << TLevel::Fatal << "~ InitializeNetParams() error: " << excp.what() << "\n\n";
+        logger << TLevel::Fatal << "~ InitNetParams() error: " << excp.what() << "\n\n";
         throw TRequestException(excp.what(), 501);
     }
+}
 
+
+void NRequest::TRequestManager::InitApiKey() {
+    logger << TLevel::Info << "began initializing the ApiKey for the 'api.openweathermap.org\n";
+
+    try {
+        std::string apiKeyStr = configJson.at("API_KEY").dump();
+        TRequestManager::ApiKey = std::move(apiKeyStr.substr(1, apiKeyStr.size() - 2));
+
+    } catch (nlohmann::json::type_error& typeExcp) {
+        logger << TLevel::Fatal;
+        logger << "~ InitApiKey() error: during initializing the ApiKey: " << typeExcp.what() << "\n";
+        logger << "\terror's id: " << typeExcp.id << "\n\n";
+        throw TRequestException(typeExcp.what(), 502);
+
+    } catch (nlohmann::json::parse_error& parseExcp) {
+        logger << TLevel::Fatal;
+        logger << "~ InitApiKey() error: during initializing the ApiKey: " << parseExcp.what() << "\n";
+        logger << "\terror's id: " << parseExcp.id << "\n\n";
+        throw TRequestException(parseExcp.what(), 502);
+
+    } catch (std::exception& excp) {
+        logger << TLevel::Fatal;
+        logger << "~ InitApiKey() error: during initializing the ApiKey: " << excp.what() << "\n";
+        throw TRequestException(excp.what(), 503);
+    }
+
+    logger << TLevel::Info;
+    logger << "initializing the ApiKey for the 'api.openweathermap.org' finished correctly\n\n";
+}
+
+
+void NRequest::ConfigureRequestService() {
+    InitConfig();
+    InitNetParams();
+    TRequestManager::InitApiKey();
 }
 
 
@@ -62,26 +96,6 @@ NRequest::TRequestManager::TRequestManager()
     : SocketWeath(NRequest::service)
     , SocketGeo(NRequest::service)
 {
-    InitConfig();
-    InitNetParams();
-
-    try {
-        logger << TLevel::Info << "initializing the ApiKey for the 'api.openweathermap.org\n";
-        ApiKey = configJson.at("API_KEY").dump();
-
-        logger << TLevel::Info << "initializing the ApiKey for the 'api.openweathermap.org finished ";
-        logger << "correctly\n\n";
-
-    } catch (nlohmann::json::type_error& typeExcp) {
-        logger << TLevel::Fatal << "error while initializing the ApiKey: " << typeExcp.what() << "\n";
-        logger << TLevel::Fatal << "\terror's id: " << typeExcp.id << "\n\n";
-        throw TRequestException(typeExcp.what(), 502);
-
-    } catch (nlohmann::json::parse_error& parseExcp) {
-        logger << TLevel::Fatal << "error while initializing the ApiKey: " << parseExcp.what() << "\n";
-        logger << TLevel::Fatal << "\terror's id: " << parseExcp.id << "\n\n";
-        throw TRequestException(parseExcp.what(), 502);
-    }
 }
 
 
@@ -90,26 +104,6 @@ NRequest::TRequestManager::TRequestManager(const std::string& city)
     , SocketGeo(NRequest::service)
     , City(city)
 {
-    InitConfig();
-    InitNetParams();
-
-    try {
-        logger << TLevel::Info << "initializing the ApiKey for the 'api.openweathermap.org\n";
-        ApiKey = configJson.at("API_KEY").dump();
-
-        logger << TLevel::Info << "initializing the ApiKey for the 'api.openweathermap.org finished ";
-        logger << "correctly\n\n";
-
-    } catch (nlohmann::json::type_error& typeExcp) {
-        logger << TLevel::Fatal << "error while initializing the ApiKey: " << typeExcp.what() << "\n";
-        logger << TLevel::Fatal << "\terror's id: " << typeExcp.id << "\n\n";
-        throw TRequestException(typeExcp.what(), 502);
-
-    } catch (nlohmann::json::parse_error& parseExcp) {
-        logger << TLevel::Fatal << "error while initializing the ApiKey: " << parseExcp.what() << "\n";
-        logger << TLevel::Fatal << "\terror's id: " << parseExcp.id << "\n\n";
-        throw TRequestException(parseExcp.what(), 502);
-    }
 }
 
 
@@ -152,11 +146,11 @@ std::string NRequest::TRequestManager::GetCelsus(std::string temp) const {
 
 
 void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) {
+    logger << TLevel::Debug << "the creation of the weather description has begun\n";
+
     WeatherDesc.clear();
 
     try {
-        logger << TLevel::Debug << "the creation of the weather description has begun\n";
-
         WeatherDesc += "- Weather Main Description: ";
         WeatherDesc += weathJson.at("weather").at(0).at("description").dump() + "\n";
 
@@ -178,8 +172,6 @@ void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) 
             WeatherDesc += "0\n";
         }
 
-        logger << TLevel::Debug << "the weather description was successfully made\n\n";
-
     } catch (nlohmann::json::type_error& typeExcp) {
         logger << TLevel::Error << "~ SetWeatherDesc() error: " << typeExcp.what() << "\n";
         logger << TLevel::Error << "\terror's id: " << typeExcp.id << "\n\n";
@@ -190,21 +182,23 @@ void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) 
         logger << TLevel::Error << "\terror's id: " << parseExcp.id << "\n\n";
         throw TRequestException(parseExcp.what(), 502);
     }
+
+    logger << TLevel::Debug << "the weather description was successfully made\n\n";
 }
 
 
 std::string NRequest::TRequestManager::GetCoordsJson() {
     std::string coordsBuff(4096, '\0');
 
-    try {
-        logger << TLevel::Debug << "began sending the request to 'api.openweathermap.org' (geo-service) ";
-        logger << "for receiving the coordinates of the city '" << City << "'\n";
+    logger << TLevel::Debug << "began sending the request to 'api.openweathermap.org' (geo-service) ";
+    logger << "for receiving the coordinates of the city '" << City << "'\n";
 
+    try {
         std::string url = "http://api.openweathermap.org/geo/1.0/direct?q=";
         std::ostringstream requestStream;
 
         url += GetRightCityName(City);
-        url += ",,RU&limit=1&"; 
+        url += ",,RU&limit=1"; 
         url += "&appid=";
         url += ApiKey;
 
@@ -215,32 +209,30 @@ std::string NRequest::TRequestManager::GetCoordsJson() {
         requestStream << "APPID: " << ApiKey << "\r\n";
         requestStream << "\r\n\r\n";
 
-        logger << TLevel::Debug << "sent the HTTP-message:\n" << requestStream.str() << "\n"; 
-        
         SocketGeo.write_some(boost::asio::buffer(requestStream.str()));
         SocketGeo.read_some(boost::asio::buffer(coordsBuff));
 
-        logger << TLevel::Debug << "the coordinates was got from ";
-        logger << "'api.openweathermap.org' (geo-service):\n";
-        logger << coordsBuff.substr(0, coordsBuff.find('\0')) << "\n\n";
-
         SocketGeo.close();
-
-        if ((coordsBuff.substr(0, coordsBuff.find('\0'))).size() == 2) {
-            logger << TLevel::Error << "the coordinates from 'api.openweathermap.org' ";
-            logger << "(geo-service) are empty\n\n";
-            throw TRequestException("client-side error: json is empty", 401);
-        }
 
     } catch (boost::system::system_error& excp) {
         SocketGeo.close();
-        logger << TLevel::Fatal << "~ GetCoordsJson() error: " << excp.what() << "\n\n";
+        logger << TLevel::Error << "~ GetCoordsJson() error: " << excp.what() << "\n\n";
         throw TRequestException(excp.what(), 501);
 
     } catch (...) {
         SocketGeo.close();
+        logger << TLevel::Error << "~ GetCoordsJson() error: unpredictable error was generated\n\n";
         throw;
     }
+
+    if ((coordsBuff.substr(0, coordsBuff.find('\0'))).size() == 2) {
+        logger << TLevel::Error << "~ GetCoordsJson() error: ";
+        logger << "the coordinates from 'api.openweathermap.org' ";
+        logger << "(geo-service) are empty\n\n";
+        throw TRequestException("coords json is empty", 401);
+    }
+
+    logger << TLevel::Debug << "the coordinates of the city '" << City << "' were correctly recieved\n\n";
 
     return coordsBuff;
  }
@@ -250,42 +242,42 @@ auto NRequest::TRequestManager::GetCoords(const std::string& jsonStrCoords) cons
     nlohmann::json jsonCoords;
     std::unordered_map<std::string, std::string> coords = {{ "lat", "" }, { "lon", "" }};
 
-    try {
-        logger << TLevel::Debug << "parsing the json from 'api.openweathermap.org' ";
-        logger << "(geo-service) has begun\n";
+    logger << TLevel::Debug << "parsing the json from 'api.openweathermap.org' ";
+    logger << "(geo-service) has begun\n";
 
+    try {
         jsonCoords = std::move(nlohmann::json::parse(jsonStrCoords));
 
         if (jsonCoords.at(0).at("name").dump() != ("\"" + City + "\"")) {
             logger << TLevel::Error << "the json with coordinates doesn't describe the city '";
-            logger << City << "'\n\n";
+            logger << City << "': perhaps the name of the city isn't correct\n\n";
             throw TRequestException("the invalid name of the city", 401);
         }
 
         coords.at("lat") = jsonCoords.at(0).at("lat").dump();
         coords.at("lon") = jsonCoords.at(0).at("lon").dump();
 
-        logger << TLevel::Debug << "parsing the json from 'api.openweathermap.org' ";
-        logger << "(geo-service) was successfully finished\n\n";
-
-    } catch (nlohmann::json::parse_error& excp) {
-        logger << TLevel::Error << "~ GetCoords() error: " << excp.what() << "\n";
-        logger << TLevel::Error << "\terror' id: " << excp.id << "\n\n";
-        throw TRequestException(excp.what(), 502);
+    } catch (nlohmann::json::parse_error& parseExcp) {
+        logger << TLevel::Error << "~ GetCoords() error: " << parseExcp.what() << "\n";
+        logger << TLevel::Error << "\terror' id: " << parseExcp.id << "\n\n";
+        throw TRequestException(parseExcp.what(), 502);
 
     } catch (nlohmann::json::type_error& typeExcp) {
         logger << TLevel::Error << "~ GetCoords() error: " << typeExcp.what() << "\n";
-        logger << TLevel::Error << "\terror's id: " << typeExcp.id << "\n\n";
+        logger << TLevel::Error << "\terror' id: " << typeExcp.id << "\n\n";
         throw TRequestException(typeExcp.what(), 502);
 
-    } catch (TRequestException& excp) {
+    } catch (NRequest::TRequestException& excp) {
         throw;
-
+        
     } catch (std::exception& excp) {
-        logger << TLevel::Error << "~ GetCoords() error: " << excp.what() << "\n\n";
+        logger << TLevel::Error << "~ GetCoords() error: " << excp.what() << "\n";
         throw TRequestException(excp.what(), 503);
     }
-    
+
+    logger << TLevel::Debug << "parsing the json from 'api.openweathermap.org' ";
+    logger << "(geo-service) was successfully finished\n\n";
+
     return coords;
 }
 
@@ -293,10 +285,10 @@ auto NRequest::TRequestManager::GetCoords(const std::string& jsonStrCoords) cons
 auto NRequest::TRequestManager::GetWeatherJson(const std::unordered_map<std::string, std::string>& coords) {
     std::string weathBuff(4096, '\0');
 
-    try {
-        logger << TLevel::Debug << "began sending the request to 'api.openweathermap.org' ";
-        logger << "(weather-service) for receiving the weather of the city '" << City << "'\n";
+    logger << TLevel::Debug << "began sending the request to 'api.openweathermap.org' ";
+    logger << "(weather-service) for receiving the weather of the city '" << City << "'\n";
 
+    try {
         std::string url = "http://api.openweathermap.org/data/2.5/weather?lat=";
         std::ostringstream requestStream;
 
@@ -313,20 +305,18 @@ auto NRequest::TRequestManager::GetWeatherJson(const std::unordered_map<std::str
         requestStream << "APPID: " << ApiKey << "\r\n";
         requestStream << "\r\n\r\n";
 
-        logger << TLevel::Debug << "sent the HTTP-message:\n" << requestStream.str() << "\n"; 
-
         SocketWeath.write_some(boost::asio::buffer(requestStream.str()));
         SocketWeath.read_some(boost::asio::buffer(weathBuff));
 
-        logger << TLevel::Debug << "the weather was got from 'api.openweathermap.org' ";
-        logger << "(weather-service)\n";
-        logger << TLevel::Debug << weathBuff.substr(0, weathBuff.find('\0')) << "\n\n";
+        if (weathBuff.empty()) {
+            throw TRequestException("the weather json is empty", 401);
+        }
 
         SocketWeath.close();
 
     } catch (boost::system::system_error& excp) {
         SocketWeath.close();
-        logger << TLevel::Fatal << "~ GetWeatherJson() error: " << excp.what() << "\n\n";
+        logger << TLevel::Error << "~ GetWeatherJson() error: " << excp.what() << "\n\n";
         throw TRequestException(excp.what(), 501);
 
     } catch (TRequestException& excp) {
@@ -340,53 +330,213 @@ auto NRequest::TRequestManager::GetWeatherJson(const std::unordered_map<std::str
 
     } catch (...) {
         SocketWeath.close();
+        logger << TLevel::Error << "~ GetWeatherJson() error: unpredictable error was generated" << "\n\n";
         throw;
     }
 
-   return weathBuff;
+    logger << TLevel::Debug << "the weather json from 'api.openweathermap.org for the city' ";
+    logger << City << "' was correcly recieved\n\n";
+
+    return weathBuff;
 }
 
 
-std::string NRequest::TRequestManager::GetWeather(std::string city) {
-    if (City == city && !WeatherDesc.empty()) {
-        logger << TLevel::Debug << "got the same city: return previous result\n";
-        return WeatherDesc;
-    }
+std::string NRequest::TRequestManager::GetWeatherService(const std::string& city) {
+    City = city;
+    WeatherDesc.clear();
 
-    City = std::move(city);
-
+    logger << TLevel::Debug << "the process of receiving the weather description ";
+    logger << "(request_manager-service) for the city '" << City << "' has begun\n";
+    
     try {
-        logger << TLevel::Debug << "the process of receiving the weather description ";
-        logger << "(request_manager-service) for the city '" << City << "' has begun\n";
-
         nlohmann::json weathJson = nlohmann::json::parse(GetWeatherJson(GetCoords(GetCoordsJson())));
+
+        if (weathJson.at("cod").dump() != "200") {
+            logger << TLevel::Error << "~ GetWeatherService() error: ";
+            logger << "the answer from the server IS NOT 200 OK\n";
+            throw TRequestException("the code status for the weather description isn't 200 (not OK)",
+                505);
+        }
         SetWeatherDesc(weathJson);
 
-        logger << TLevel::Debug << "the weather description was successfully made:\n";
-        logger << WeatherDesc << "\n\n";
-
-    } catch (nlohmann::json::parse_error& excp) {
+    } catch (nlohmann::json::parse_error& parseExcp) {
         WeatherDesc.clear();
-        logger << TLevel::Error << "~ GetWeather() error: " << excp.what() << "\n";
-        logger << TLevel::Error << "\terror's id: " << excp.id << "\n\n";
-        throw TRequestException(excp.what(), 502);
+        logger << TLevel::Error << "~ GetWeatherService() error: " << parseExcp.what() << "\n";
+        logger << TLevel::Error << "\terror's id: " << parseExcp.id << "\n\n";
+        throw TRequestException(parseExcp.what(), 502);
 
     } catch (nlohmann::json::type_error& typeExcp) {
         WeatherDesc.clear();
-        logger << TLevel::Error << "~ GetWeather() error: " << typeExcp.what() << "\n";
+        logger << TLevel::Error << "~ GetWeatherService() error: " << typeExcp.what() << "\n";
         logger << TLevel::Error << "\terror's id: " << typeExcp.id << "\n\n";
         throw TRequestException(typeExcp.what(), 502);
+
+    } catch (...) {
+        WeatherDesc.clear();
+        throw;
     }
+
+    logger << TLevel::Debug << "the weather description was successfully made for the city'";
+    logger << City << "':\n" << WeatherDesc << "\n\n";
+
+    return WeatherDesc;
+}
+
+
+std::string NRequest::TRequestManager::GetWeatherService() {
+    if (!City.empty()) {
+        return GetWeather(City);
+
+    } else {
+        logger << TLevel::Error << "~ GetWeatherService() error: the City is empty: incorrect data\n\n";
+        throw TRequestException("the member City is empty", 401);
+    }
+}
+
+
+std::string NRequest::TRequestManager::GetWeather(const std::string& city) {
+    logger << TLevel::Debug << "the request_manager-service started receiving\n";
+    
+    for (bool noThrow = false; !noThrow; ) {
+        try {
+            GetWeatherService(city);
+            noThrow = true;
+
+        } catch (NRequest::TRequestException& excp) {
+            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499) {
+                throw;
+            }
+
+        } catch (...) {
+            throw;
+        }
+    }
+    logger << TLevel::Debug << "the request_manager-service stopped receiving\n";
 
     return WeatherDesc;
 }
 
 
 std::string NRequest::TRequestManager::GetWeather() {
-    if (!City.empty()) {
-        return GetWeather(City);
-    } else {
-        logger << TLevel::Error << "got invalid argument for city\n";
-        throw TRequestException("the member City is empty", 401);
+    logger << TLevel::Debug << "the request_manager-service started receiving\n";
+
+    for (bool noThrow = false; !noThrow; ) {
+        try {
+            GetWeatherService();
+            noThrow = true;
+
+        } catch (NRequest::TRequestException& excp) {
+            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499) {
+                throw;
+            }
+
+        } catch (...) {
+            throw;
+        }
+    }
+
+    logger << TLevel::Debug << "the request_manager-service stopped receiving\n";
+
+    return WeatherDesc;
+}
+
+
+/*
+void NRequest::GetWeatherThreadService(const std::string& city, std::string& weather, TThreadSettings& setts) {
+    NRequest::TRequestManager request(city);
+
+    for (bool noThrow = false; !noThrow; ) {
+        try {
+            auto weathRes = std::move(request.GetWeather());
+
+            setts.WeatherMut.lock();
+
+            if (setts.WeatherInitFlag) {
+                setts.WeatherMut.unlock();
+                return;
+            }
+
+            weather = std::move(weathRes);
+            noThrow = true;
+
+        } catch (NRequest::TRequestException& excp) {
+            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499) {
+                loggerMut.lock();
+
+                logger << TLevel::Fatal << "get fatal error with code " << excp.GetErrorId() << "\n";
+                logger << "\tdescription: " << excp.what() << "\n\n";
+
+                loggerMut.unlock();
+
+                setts.CriticalErrorFlag = true;
+
+                break;
+            }
+
+            loggerMut.lock();
+            logger << TLevel::Error << "get error: " << excp.what() << "\ncode: " << excp.what() << "\n\n";
+            loggerMut.unlock();
+
+        } catch (...) {
+            loggerMut.lock();
+            logger << TLevel::Error << "get unpredictable error\n\n";
+            loggerMut.unlock();
+
+        }
+        setts.WeatherMut.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 }
+
+
+void NRequest::MakeThreads(std::vector<std::thread>& requestWeathThreads, const std::string& city, std::string& weather, TThreadSettings& setts) {
+    for (size_t i = 0; i != 4; ++i) {
+        requestWeathThreads.push_back(std::thread(GetWeatherThreadService, std::cref(city), 
+            std::ref(weather), std::ref(setts)));
+        requestWeathThreads.back().detach();
+    }
+} 
+
+
+std::string NRequest::GetWeather(const std::string& city) {
+    logger << TLevel::Debug << "receiving the weather for the city '" << city << "' begun\n";
+
+    std::string weatherDescResult;
+    std::vector<std::thread> requestWeathThreads;
+    TThreadSettings setts;
+
+    MakeThreads(requestWeathThreads, city, weatherDescResult, setts);
+    
+    for (size_t count = 1; true; ++count) {
+        setts.WeatherMut.lock();
+
+        if (setts.CriticalErrorFlag) {
+            setts.WeatherMut.unlock();
+            
+            loggerMut.lock();
+            logger << TLevel::Fatal << "critical error was generated\n\n";
+            loggerMut.unlock();
+
+            throw TRequestException("critical error was generated\n", 600);
+        }
+
+        if (!weatherDescResult.empty()) {
+            setts.WeatherInitFlag = true;
+            setts.WeatherMut.unlock();
+            break;
+
+        } else if (count == 100'000'000) {
+            MakeThreads(requestWeathThreads, city, weatherDescResult, setts);
+            count = 1;
+        }
+        setts.WeatherMut.unlock();
+    }
+
+    loggerMut.lock();
+    logger << TLevel::Debug << "receiving the weather for the city '" << city;
+    logger << "' finished successfully:\n" << weatherDescResult << "\n\n";
+    loggerMut.unlock();
+
+    return weatherDescResult;
+}
+*/

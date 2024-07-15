@@ -1,29 +1,22 @@
 #include <iostream>
 #include "logger.h"
-#include "cache_manager.h"
+#include "request_manager.h"
 
 TLogger logger;
 
 int main() {
-    //NRequest::TRequestManager request("Moscow");
-
-    // try {
-    //      std::cout << request.GetWeather();
-    // } catch (NRequest::TRequestException& excp) {
-    //     std::cerr << excp.what();
-    // } catch (...) {
-        
-    // }
-
     try {
-        NRequest::InitConfig();
-        NRequest::TCacheManager manager;
+        NRequest::ConfigureRequestService();
+        NRequest::TRequestManager request;
+        std::string city;
 
-        auto res = manager.CheckData("Moscow");
-        std::cout << std::boolalpha << std::endl << res;
+        std::cin >> city;
+        std::cout << request.GetWeather(city);
 
+    } catch (NRequest::TRequestException& excp) {
+        std::cout << excp.what();
     } catch (...) {
-        return 1;   
+        std::cout << "error generated\n";
     }
 
     return 0;

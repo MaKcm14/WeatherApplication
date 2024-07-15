@@ -1,21 +1,39 @@
 #ifndef REQUEST_MANAGER_HEADER
 
 #    include <boost/asio.hpp>
+#    include <chrono>
 #    include <fstream>
 #    include <iostream>
 #    include "logger.h"
+#    include <mutex>
 #    include <nlohmann/json.hpp>
 #    include "request_exception.h"
 #    include <sstream>
+#    include <thread>
 #    include <unordered_map>
+#    include <vector>
 
 namespace NRequest {
 
-    nlohmann::json configJson;
-
-    static void InitNetParams();
+    void InitNetParams();
 
     void InitConfig();
+
+    void ConfigureRequestService();
+
+    /*
+    struct TThreadSettings {
+        bool CriticalErrorFlag = false;
+        bool WeatherInitFlag = false;
+        std::mutex WeatherMut;
+    };
+
+    void GetWeatherThreadService(const std::string& city, std::string& weather, TThreadSettings& setts);
+
+    void MakeThreads(std::vector<std::thread>& requestWeathThreads, const std::string& city, std::string& weatherDescResult, TThreadSettings& setts);
+
+    std::string GetWeather(const std::string& city);
+    */
 
     /// @brief Let make requests for 'api.openweathermap.org'
     class TRequestManager {
@@ -33,7 +51,7 @@ namespace NRequest {
 
         std::string GetWeather();
 
-        std::string GetWeather(std::string city);
+        std::string GetWeather(const std::string& city);
 
         std::string GetCity() const noexcept {
             return City;
@@ -48,7 +66,10 @@ namespace NRequest {
             return !WeatherDesc.empty();
         }
 
+        static void InitApiKey();
+
     private:
+        
         std::string GetCoordsJson();
 
         auto GetCoords(const std::string& jsonStrCoords) const;
@@ -63,15 +84,18 @@ namespace NRequest {
 
         std::string GetRightCityName(const std::string& city) const noexcept;
 
+        std::string GetWeatherService();
+
+        std::string GetWeatherService(const std::string& city);
+
     private:
-        std::string ApiKey;
+        static inline std::string ApiKey = "";
         TTcpSocket SocketWeath;
         TTcpSocket SocketGeo;
         std::string City;
         std::string WeatherDesc;
         
     };
-
 
 }
 
