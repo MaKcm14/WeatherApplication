@@ -56,7 +56,7 @@ void NRequest::InitNetParams() {
 
 
 void NRequest::TRequestManager::InitApiKey() {
-    logger << TLevel::Info << "began initializing the ApiKey for the 'api.openweathermap.org\n";
+    logger << TLevel::Info << "began initializing the ApiKey for the 'api.openweathermap.org'\n";
 
     try {
         std::string apiKeyStr = configJson.at("API_KEY").dump();
@@ -157,7 +157,7 @@ void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) 
         WeatherDesc += "- Temperature (C): ";
         WeatherDesc += GetCelsus(weathJson.at("main").at("temp").dump()) + "\n";
 
-        WeatherDesc += "- Temperature 'feels_like' (C): ";
+        WeatherDesc += "- Temperature \"feels_like\" (C): ";
         WeatherDesc += GetCelsus(weathJson.at("main").at("feels_like").dump()) + "\n";
 
         WeatherDesc += "- Pressure (mmHg): ";
@@ -229,7 +229,7 @@ std::string NRequest::TRequestManager::GetCoordsJson() {
         logger << TLevel::Error << "~ GetCoordsJson() error: ";
         logger << "the coordinates from 'api.openweathermap.org' ";
         logger << "(geo-service) are empty\n\n";
-        throw TRequestException("coords json is empty", 401);
+        throw TRequestException("coords json is empty: perhaps the city name IS NOT correct", 401);
     }
 
     logger << TLevel::Debug << "the coordinates of the city '" << City << "' were correctly recieved\n\n";
@@ -334,7 +334,7 @@ auto NRequest::TRequestManager::GetWeatherJson(const std::unordered_map<std::str
         throw;
     }
 
-    logger << TLevel::Debug << "the weather json from 'api.openweathermap.org for the city' ";
+    logger << TLevel::Debug << "the weather json from 'api.openweathermap.org for the city '";
     logger << City << "' was correcly recieved\n\n";
 
     return weathBuff;
@@ -376,7 +376,7 @@ std::string NRequest::TRequestManager::GetWeatherService(const std::string& city
         throw;
     }
 
-    logger << TLevel::Debug << "the weather description was successfully made for the city'";
+    logger << TLevel::Debug << "the weather description was successfully made for the city '";
     logger << City << "':\n" << WeatherDesc << "\n\n";
 
     return WeatherDesc;

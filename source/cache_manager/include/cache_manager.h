@@ -10,9 +10,9 @@
 
 namespace NRequest {
 
-    extern void InitConfig();
+    extern void ConfigureRequestService();
 
-    /// @brief Open the connection to the DB
+    /// @brief Describes the connection to the DB
     class TPostgresConnection {
     public:
         TPostgresConnection();
@@ -38,11 +38,14 @@ namespace NRequest {
     public:
         TCacheManager();
 
-        bool CheckData(const std::string& city);
+        bool IsDataExpired(const std::string& city);
 
         void InsertOrUpdateData(const std::string& city, const std::string& weathDesc);
 
         std::string GetData(const std::string& city);
+
+    private:
+        bool CheckExistingData(const std::string& city);
         
     private:
         TPostgresConnection Connection;
