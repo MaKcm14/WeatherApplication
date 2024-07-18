@@ -9,7 +9,7 @@ TEST(Request_Manager_Tests, Town_Bugulma) {
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
-        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499) {
+        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
             FAIL();
         }
 
@@ -26,7 +26,7 @@ TEST(Request_Manager_Tests, Town_Almetyevsk) {
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
-        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499) {
+        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
             FAIL();
         }
 
@@ -43,7 +43,7 @@ TEST(Request_Manager_Tests, Town_Nizhnekamsk) {
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
-        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499) {
+        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
             FAIL();
         }
 

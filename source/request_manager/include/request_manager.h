@@ -21,20 +21,6 @@ namespace NRequest {
 
     void ConfigureRequestService();
 
-    /*
-    struct TThreadSettings {
-        bool CriticalErrorFlag = false;
-        bool WeatherInitFlag = false;
-        std::mutex WeatherMut;
-    };
-
-    void GetWeatherThreadService(const std::string& city, std::string& weather, TThreadSettings& setts);
-
-    void MakeThreads(std::vector<std::thread>& requestWeathThreads, const std::string& city, std::string& weatherDescResult, TThreadSettings& setts);
-
-    std::string GetWeather(const std::string& city);
-    */
-
     /// @brief Let make requests for 'api.openweathermap.org'
     class TRequestManager {
     public:
@@ -70,19 +56,15 @@ namespace NRequest {
 
     private:
         
-        std::string GetCoordsJson();
-
-        auto GetCoords(const std::string& jsonStrCoords) const;
-
-        auto GetWeatherJson(const std::unordered_map<std::string, std::string>& coords);
+        std::string GetUrlCityView();
+        
+        std::string GetWeatherJson();
 
         std::string GetMmHg(std::string pressure) const;
 
         std::string GetCelsus(std::string temp) const;
 
         void SetWeatherDesc(const nlohmann::json& weathJson);
-
-        std::string GetRightCityName(const std::string& city) const noexcept;
 
         std::string GetWeatherService();
 

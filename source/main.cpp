@@ -14,6 +14,8 @@ int main() {
         std::string city;
         std::cin >> city;
 
+        //std::cout << request.GetWeather(city);
+        
         if (cache.IsDataExpired(city)) {
             auto weatherDesc = request.GetWeather(city);
             cache.InsertOrUpdateData(city, weatherDesc);
