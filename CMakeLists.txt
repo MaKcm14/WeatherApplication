@@ -30,8 +30,8 @@ message("-- creating main target")
 add_executable(main ./source/main.cpp)
 
 target_link_libraries(request_manager_lib PUBLIC logger_lib)
+target_link_libraries(cache_manager_lib PUBLIC request_manager_lib)
 target_link_libraries(main PRIVATE cache_manager_lib)
-target_link_libraries(main PRIVATE request_manager_lib)
 
 
 # Finding packages

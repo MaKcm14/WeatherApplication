@@ -9,7 +9,7 @@ TEST(Request_Manager_Tests, City_Moscow) {
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
-        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
+        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
             FAIL();
         }
 
@@ -26,7 +26,7 @@ TEST(Request_Manager_Tests, City_Kazan) {
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
-        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
+        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
             FAIL();
         }
 
@@ -43,7 +43,7 @@ TEST(Request_Manager_Tests, City_Saint_Petersburg) {
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
-        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
+        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
             FAIL();
         }
 

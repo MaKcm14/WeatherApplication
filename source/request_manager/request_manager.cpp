@@ -94,14 +94,12 @@ void NRequest::ConfigureRequestService() {
 
 NRequest::TRequestManager::TRequestManager()
     : SocketWeath(NRequest::service)
-    , SocketGeo(NRequest::service)
 {
 }
 
 
 NRequest::TRequestManager::TRequestManager(const std::string& city)
     : SocketWeath(NRequest::service)
-    , SocketGeo(NRequest::service)
     , City(city)
 {
 }
@@ -218,7 +216,7 @@ std::string NRequest::TRequestManager::GetWeatherJson() {
 
     } catch (boost::system::system_error& excp) {
         SocketWeath.close();
-        logger << TLevel::Error << "~ GetWeatherJson() error: " << excp.what() << "\n\n";
+        logger << TLevel::Fatal << "~ GetWeatherJson() error: " << excp.what() << "\n\n";
         throw TRequestException(excp.what(), 501);
 
     } catch (TRequestException& excp) {
@@ -244,6 +242,11 @@ std::string NRequest::TRequestManager::GetWeatherJson() {
 
 
 std::string NRequest::TRequestManager::GetWeatherService(const std::string& city) {
+     if (city.empty()) {
+        logger << TLevel::Error << "~ GetWeatherService() error: the City is empty: incorrect data\n\n";
+        throw TRequestException("the member City is empty", 401);    
+    }
+
     City = city;
     WeatherDesc.clear();
 
@@ -257,7 +260,7 @@ std::string NRequest::TRequestManager::GetWeatherService(const std::string& city
             logger << TLevel::Error << "~ GetWeatherService() error: ";
             logger << "the answer from the server IS NOT 200 OK\n";
             throw TRequestException("the code status for the weather description isn't 200 (not OK)",
-                401);
+                404);
         }
         SetWeatherDesc(weathJson);
 
@@ -287,7 +290,7 @@ std::string NRequest::TRequestManager::GetWeatherService(const std::string& city
 
 std::string NRequest::TRequestManager::GetWeatherService() {
     if (!City.empty()) {
-        return GetWeather(City);
+        return GetWeatherService(City);
 
     } else {
         logger << TLevel::Error << "~ GetWeatherService() error: the City is empty: incorrect data\n\n";
@@ -298,14 +301,14 @@ std::string NRequest::TRequestManager::GetWeatherService() {
 
 std::string NRequest::TRequestManager::GetWeather(const std::string& city) {
     logger << TLevel::Debug << "the request_manager-service started receiving\n";
-    
+
     for (bool noThrow = false; !noThrow; ) {
         try {
             GetWeatherService(city);
             noThrow = true;
 
         } catch (NRequest::TRequestException& excp) {
-            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
+            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
                 throw;
             }
 
@@ -328,7 +331,7 @@ std::string NRequest::TRequestManager::GetWeather() {
             noThrow = true;
 
         } catch (NRequest::TRequestException& excp) {
-            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 505) {
+            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
                 throw;
             }
 

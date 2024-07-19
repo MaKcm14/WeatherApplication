@@ -46,6 +46,8 @@ namespace NRequest {
 
     private:
         bool CheckExistingData(const std::string& city);
+
+        bool IsDataSafety(const std::string& city) const;
         
     private:
         TPostgresConnection Connection;

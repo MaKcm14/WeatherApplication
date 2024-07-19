@@ -78,15 +78,38 @@ NRequest::TCacheManager::TCacheManager() {
 }
 
 
-/// @return Return false if data aren't in the DB or it has the expired time status
-/// if data hasn't expired time status function returns true 
-/// PAY ATTENTION that the expres column is related to the time that defined as getting time + 15 mins;
+/// @return true if code is safety and false if symbols are suspicious
+bool NRequest::TCacheManager::IsDataSafety(const std::string& city) const {
+    logger << TLevel::Debug << "checking the availability of the SQL-injection in the city '";
+    logger << city << "'begun\n";
+
+    for (const auto& elem : city) {
+        if (elem >= 65 && elem <= 90 || elem >= 97 && elem <= 122 || elem == '-') {
+            continue;
+        } else {
+            logger << TLevel::Warning << "the data for the city '" << city << "' are suspicious\n\n";
+            return false;
+        }
+    }
+
+    logger << TLevel::Debug << "checking the SQL-injection in the city '" << city;
+    logger << "'was finished correcly: the SQL-injections perhaps aren't in it\n\n";
+    return true;
+}
+
+
+/// @return Return true if data aren't in the DB or it has the expired time status
+/// if data hasn't expired time status function returns false 
+/// PAY ATTENTION that the expires column is related to the time that defined as getting time + 15 mins;
 bool NRequest::TCacheManager::IsDataExpired(const std::string& city) {
-    /// TODO: check the SQL-injection
     logger << TLevel::Debug << "checking the data are in the DB and hasn't expired time status begun\n";
 
+    if (!IsDataSafety(city)) {
+        throw TRequestException("data are suspicious with SQL-injection", 405);
+    }
+
     if (city.empty()) {
-        logger << TLevel::Warning << "~ IsDataExpired() warning: the city name isn't correct (empty)\n\n";
+        logger << TLevel::Error << "~ IsDataExpired() warning: the city name isn't correct (empty)\n\n";
         throw TRequestException("the city name isn't correct (empty)", 401);
     }
 
@@ -133,6 +156,15 @@ bool NRequest::TCacheManager::IsDataExpired(const std::string& city) {
 std::string NRequest::TCacheManager::GetData(const std::string& city) {
     logger << TLevel::Debug << "getting the data from the DB has begun\n";
 
+    if (!IsDataSafety(city)) {
+        throw TRequestException("data are suspicious with SQL-injection", 405);
+    }
+
+    if (city.empty()) {
+        logger << TLevel::Error << "~ IsDataExpired() warning: the city name isn't correct (empty)\n\n";
+        throw TRequestException("the city name isn't correct (empty)", 401);
+    }
+
     if (!IsDataExpired(city)) {
         auto checkGetResult = PQexec(Connection.GetConnection(), (std::string("SELECT * FROM weather")+
             "\r\nWHERE city='" + city + "'\r\n").c_str());
@@ -171,6 +203,10 @@ std::string NRequest::TCacheManager::GetData(const std::string& city) {
 bool NRequest::TCacheManager::CheckExistingData(const std::string& city) {
     logger << TLevel::Debug << "checking the existing of the city '" << city << "' begun\n";
 
+    if (!IsDataSafety(city)) {
+        throw TRequestException("data are suspicious with SQL-injection", 405);
+    }
+
     if (city.empty()) {
         logger << TLevel::Error << "~ CheckExistingData() error: the city is empty\n\n";
         throw TRequestException("invalid data", 401);
@@ -208,6 +244,15 @@ bool NRequest::TCacheManager::CheckExistingData(const std::string& city) {
 
 void NRequest::TCacheManager::InsertOrUpdateData(const std::string& city, const std::string& weathDesc) {
     logger << TLevel::Debug << "inserting/updating the data for the city '" << city << "' begun\n";
+
+    if (!IsDataSafety(city)) {
+        throw TRequestException("data are suspicious with SQL-injection", 405);
+    }
+
+    if (city.empty()) {
+        logger << TLevel::Error << "~ IsDataExpired() warning: the city name isn't correct (empty)\n\n";
+        throw TRequestException("the city name isn't correct (empty)", 401);
+    }
     
     auto expiredTime = time(NULL) + 15 * 60;
     tm* expiredUTCTime = gmtime(&expiredTime);

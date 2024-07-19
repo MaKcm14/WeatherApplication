@@ -26,7 +26,7 @@ TEST(Request_Manager_Tests, Uncorrect_Data_1) {
         request.GetWeather("oiewbdibcjnl");
 
     } catch (NRequest::TRequestException& excp) {
-        ASSERT_EQ(excp.GetErrorId(), 505) << "the wrong error id for uncorrect data\n";
+        ASSERT_EQ(excp.GetErrorId(), 404) << "the wrong error id for uncorrect data\n";
 
     } catch (...) {
         FAIL() << "the unpredictable exception for uncorrect data\n";
@@ -40,7 +40,7 @@ TEST(Request_Manager_Tests, Uncorrect_Data_2) {
         request.GetWeather("K");
 
     } catch (NRequest::TRequestException& excp) {
-        ASSERT_EQ(excp.GetErrorId(), 505) << "the wrong error id for potential UB data\n";
+        ASSERT_EQ(excp.GetErrorId(), 404) << "the wrong error id for potential UB data\n";
 
     } catch (...) {
         FAIL() << "the unpredictable exception for potential UB data\n";
@@ -54,7 +54,7 @@ TEST(Request_Manager_Tests, Uncorrect_Data_3) {
         request.GetWeather("Москва");
 
     } catch (NRequest::TRequestException& excp) {
-        ASSERT_EQ(excp.GetErrorId(), 505) << "the wrong error id for uncorrect data\n" << excp.what();
+        ASSERT_EQ(excp.GetErrorId(), 404) << "the wrong error id for uncorrect data\n" << excp.what();
 
     } catch (...) {
         FAIL() << "the unpredictable exception for uncorrect data\n";

@@ -11,13 +11,14 @@ namespace NRequest {
     ///       - 401: (invalid data)
     ///       - 402: (data can't be read from the source)
     ///       - 403: (can't set the connection with the server)
+    ///       - 404: (the request wasn't processed correctly)
+    ///       - 405: (data are suspicious)
     ///
     /// - 500 - server-side's errors:
     ///       - 501: (boost::asio exceptions)
     ///       - 502: (nlohmann::json exceptions)
     ///       - 503: (STL exceptions)
     ///       - 504: (PostgreSQL excetptions)
-    ///       - 505: (the request wasn't processed correctly)
     
     class TRequestException : public std::exception {
     public:

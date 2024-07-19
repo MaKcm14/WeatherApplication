@@ -31,7 +31,6 @@ namespace NRequest {
         TRequestManager(const std::string& city);
 
         ~TRequestManager() {
-            SocketGeo.close();
             SocketWeath.close();
         }
 
@@ -73,7 +72,6 @@ namespace NRequest {
     private:
         static inline std::string ApiKey = "";
         TTcpSocket SocketWeath;
-        TTcpSocket SocketGeo;
         std::string City;
         std::string WeatherDesc;
         

@@ -10,3 +10,11 @@ add_test(NAME request_manager_test_1 COMMAND r_m_test_1)
 add_test(NAME request_manager_test_2 COMMAND r_m_test_2)
 
 add_test(NAME request_manager_test_3 COMMAND r_m_test_3)
+
+
+# Cache_manager's tests
+add_subdirectory(./cache_manager_tests)
+
+add_test(NAME cache_manager_test_1 COMMAND c_m_test_1)
+
+add_test(NAME cache_manager_test_2 COMMAND c_m_test_2)

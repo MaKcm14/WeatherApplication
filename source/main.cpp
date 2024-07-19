@@ -7,15 +7,13 @@ TLogger logger;
 
 int main() {
     try {
-        NRequest::ConfigureRequestService();
+        NRequest::ConfigureRequestService();    
         NRequest::TCacheManager cache;
         NRequest::TRequestManager request;
 
         std::string city;
         std::cin >> city;
 
-        //std::cout << request.GetWeather(city);
-        
         if (cache.IsDataExpired(city)) {
             auto weatherDesc = request.GetWeather(city);
             cache.InsertOrUpdateData(city, weatherDesc);
