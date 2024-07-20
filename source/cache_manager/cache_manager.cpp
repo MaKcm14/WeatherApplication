@@ -249,9 +249,10 @@ void NRequest::TCacheManager::InsertOrUpdateData(const std::string& city, const 
         throw TRequestException("data are suspicious with SQL-injection", 405);
     }
 
-    if (city.empty()) {
-        logger << TLevel::Error << "~ IsDataExpired() warning: the city name isn't correct (empty)\n\n";
-        throw TRequestException("the city name isn't correct (empty)", 401);
+    if (city.empty() || weathDesc.empty()) {
+        logger << TLevel::Error << "~ IsDataExpired() warning: the city name/weather description "
+            "isn't correct (empty)\n\n";
+        throw TRequestException("the city name/weather description isn't correct (empty)", 401);
     }
     
     auto expiredTime = time(NULL) + 15 * 60;

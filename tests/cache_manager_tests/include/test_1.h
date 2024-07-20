@@ -145,6 +145,18 @@ TEST(Cache_Manager_Tests, Check_Getting_Existing_Data) {
 
 
 TEST(Cache_Manager_Tests, Check_Getting_Unexisting_Data) {
-    
+    try {
+        NRequest::TCacheManager testCache;
+        std::string weatherRes = testCache.GetData("Chekalin");
+
+        ASSERT_EQ(weatherRes, std::string("")) << "the behaviour of the function" 
+            "is unpredictable";
+
+    } catch (NRequest::TRequestException& excp) {
+        FAIL() << "the exception was generated while normal conditions: " << excp.what() << "\n\n";
+
+    } catch (...) {
+        FAIL() << "the unpredictable error was generated\n\n";
+    }
 }
 

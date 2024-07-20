@@ -1,4 +1,4 @@
-#include "include/test_1.h"
+#include "include/test_2.h"
 
 TLogger logger;
 
