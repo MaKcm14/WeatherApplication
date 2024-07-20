@@ -27,7 +27,7 @@ namespace NRequest {
             return Connection;
         }
 
-    private:
+    protected:
         PGconn* Connection;
 
     };
