@@ -1,12 +1,11 @@
-#include "cache_manager.h"
 #include <iostream>
-#include "logger.h"
-#include "request_manager.h"
+#include "weather_service.h"
 
 TLogger logger;
 
 int main() {
     try {
+        /*
         NRequest::ConfigureRequestService();    
         NRequest::TCacheManager cache;
         NRequest::TRequestManager request;
@@ -21,7 +20,11 @@ int main() {
             
         } else {
             std::cout << cache.GetData(city);
-        }
+        }*/
+
+        NWeather::TWeatherService service;
+
+        service.RunService();
 
     } catch (NRequest::TRequestException& excp) {
         std::cout << excp.what();

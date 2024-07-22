@@ -5,8 +5,6 @@ extern TLogger logger;
 namespace NRequest {
     //std::mutex loggerMut;
     nlohmann::json configJson;
-    boost::asio::io_service service;
-    boost::asio::ip::tcp::endpoint epRequest;
 }
 
 
@@ -40,13 +38,13 @@ void NRequest::InitNetParams() {
     logger << TLevel::Info << "began receiving the ip from resolver for 'api.openweathermap.org'\n";
 
     try {
-        boost::asio::ip::tcp::resolver resolver(service);
+        boost::asio::ip::tcp::resolver resolver(TRequestManager::RequestService);
         boost::asio::ip::tcp::resolver::query query("api.openweathermap.org", "80");
         boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
         
         logger << TLevel::Info << "got ip for domen 'api.openweathermap.org' from resolver\n";
        
-        NRequest::epRequest = std::move(*iter);
+        TRequestManager::EpWeatherRequest = std::move(*iter);
 
     } catch (boost::system::system_error& excp) {
         logger << TLevel::Fatal << "~ InitNetParams() error: " << excp.what() << "\n\n";
@@ -93,13 +91,13 @@ void NRequest::ConfigureRequestService() {
 
 
 NRequest::TRequestManager::TRequestManager()
-    : SocketWeath(NRequest::service)
+    : SocketWeath(RequestService)
 {
 }
 
 
 NRequest::TRequestManager::TRequestManager(const std::string& city)
-    : SocketWeath(NRequest::service)
+    : SocketWeath(RequestService)
     , City(city)
 {
 }
@@ -202,7 +200,7 @@ std::string NRequest::TRequestManager::GetWeatherJson() {
         url += "&appid=";
         url += ApiKey;
 
-        SocketWeath.connect(NRequest::epRequest);
+        SocketWeath.connect(TRequestManager::EpWeatherRequest);
 
         requestStream << "GET " << url << "\r\n";
         requestStream << "Host: api.openweathermap.org\r\n";

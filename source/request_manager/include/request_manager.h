@@ -69,8 +69,12 @@ namespace NRequest {
 
         std::string GetWeatherService(const std::string& city);
 
+    public:
+        inline static boost::asio::io_service RequestService;
+        inline static boost::asio::ip::tcp::endpoint EpWeatherRequest;
+
     private:
-        static inline std::string ApiKey = "";
+        inline static std::string ApiKey = "";
         TTcpSocket SocketWeath;
         std::string City;
         std::string WeatherDesc;

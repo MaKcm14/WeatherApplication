@@ -11,9 +11,10 @@ set_target_properties(${TARGET} PROPERTIES
 message("-- Configuring has begun")
 
 # Setting some variables
+set(CACHE_MANAGER_DIR ./source/cache_manager)
 set(LOGGER_DIR ./source/logger)
 set(REQUEST_MANAGER_DIR ./source/request_manager)
-set(CACHE_MANAGER_DIR ./source/cache_manager)
+set(WEATHER_SERVICE_DIR ./source/weather_service)
 set(ENABLE_TEST TRUE)
 
 
@@ -21,17 +22,20 @@ set(ENABLE_TEST TRUE)
 include_directories(./source/request_manager/include)
 include_directories(./source/logger/include)
 include_directories(./source/cache_manager/include)
+include_directories(./source/weather_service/include)
 
+add_subdirectory(${CACHE_MANAGER_DIR})
 add_subdirectory(${LOGGER_DIR})
 add_subdirectory(${REQUEST_MANAGER_DIR})
-add_subdirectory(${CACHE_MANAGER_DIR})
+add_subdirectory(${WEATHER_SERVICE_DIR})
 
 message("-- creating main target")
 add_executable(main ./source/main.cpp)
 
 target_link_libraries(request_manager_lib PUBLIC logger_lib)
 target_link_libraries(cache_manager_lib PUBLIC request_manager_lib)
-target_link_libraries(main PRIVATE cache_manager_lib)
+target_link_libraries(weather_service_lib PUBLIC cache_manager_lib)
+target_link_libraries(main PRIVATE weather_service_lib)
 
 
 # Finding packages
