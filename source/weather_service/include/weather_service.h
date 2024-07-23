@@ -5,6 +5,7 @@
 #    include <memory>
 #    include "nlohmann/json.hpp"
 #    include "request_manager.h"
+#    include "weather_exception.h"
 
 namespace NWeather {
     struct TQueryParams {
@@ -28,7 +29,11 @@ namespace NWeather {
     private:
         TQueryParams ParseQuery(const std::string& query) const;
 
-        std::string FormAnswer(const std::string& query) const;
+        std::string GetQueryHandler(const std::string& resource) const;
+
+        std::string PostQueryHandler(const std::string& resource, const std::string& data) const;
+
+        std::string FormResponse(const std::string& query) const;
 
         void ServeTheClient(std::unique_ptr<TSocket> clientSock) const;
     

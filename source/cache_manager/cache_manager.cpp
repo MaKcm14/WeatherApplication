@@ -81,7 +81,7 @@ NRequest::TCacheManager::TCacheManager() {
 /// @return true if code is safety and false if symbols are suspicious
 bool NRequest::TCacheManager::IsDataSafety(const std::string& city) const {
     logger << TLevel::Debug << "checking the availability of the SQL-injection in the city '";
-    logger << city << "'begun\n";
+    logger << city << "' begun\n";
 
     for (const auto& elem : city) {
         if (elem >= 65 && elem <= 90 || elem >= 97 && elem <= 122 || elem == '-') {
