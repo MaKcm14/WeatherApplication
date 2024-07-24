@@ -5,14 +5,15 @@
 #    include <memory>
 #    include "nlohmann/json.hpp"
 #    include "request_manager.h"
+#    include <thread>
+#    include <unordered_map>
 #    include "weather_exception.h"
 
 namespace NWeather {
+
     struct TQueryParams {
         std::string Method;
         std::string Resource;
-        std::string Connection;
-        std::string ContentLength;
         std::string Data;
     };
 
@@ -36,6 +37,21 @@ namespace NWeather {
         std::string FormResponse(const std::string& query) const;
 
         void ServeTheClient(std::unique_ptr<TSocket> clientSock) const;
+
+    private:
+        const inline static std::unordered_map<std::string, std::string> ErrorCodesAndResponses = {
+            { "404", "HTTP/1.1 404 Not Found\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
+                    "Content-Length: 145\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" },
+
+            { "405", "HTTP/1.1 405 Not Acceptable\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
+                    "Content-Length: 161\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" },
+
+            { "406", "HTTP/1.1 406 Not Acceptable\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
+                    "Content-Length: 183\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" },
+
+            { "502", "HTTP/1.1 502 Bad Gateway\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
+                    "Content-Length: 152\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" }            
+        };
     
     };
 }

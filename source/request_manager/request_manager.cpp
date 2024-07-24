@@ -3,7 +3,6 @@
 extern TLogger logger;
 
 namespace NRequest {
-    //std::mutex loggerMut;
     nlohmann::json configJson;
 }
 

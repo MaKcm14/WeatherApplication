@@ -1,6 +1,7 @@
 #ifndef LOGGER_HEADER
 
 #    include <fstream>
+#    include <mutex>
 
 /// @brief Simple logger class for make notes about events in the programme
 class TLogger {
@@ -18,6 +19,10 @@ private:
 
 public:
     TLogger();
+
+    ~TLogger() {
+        LogOut.close();
+    }
 
     template <typename TType>
     friend TLogger& operator << (TLogger& logger, const TType& data);
