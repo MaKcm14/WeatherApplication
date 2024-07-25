@@ -2,6 +2,32 @@
 
 TLogger logger;
 
+namespace NWeather {
+    bool criticalError = false;
+}
+
+
+/// @brief converts the weather description in the html format 
+std::string NWeather::TWeatherService::ConvertWeatherToHtml(const std::string& weather) const {
+    std::ifstream htmlTemplateStream("../source/weather_service/resource/weather_template.txt");
+    std::string weatherHtmlPage;
+
+    if (!htmlTemplateStream.is_open()) {
+        logger << TLevel::Fatal << "can't open the template weather file\n\n";
+        throw NRequest::TRequestException("can't open the template weather file", 402);
+    }
+
+    for (char symb; htmlTemplateStream.get(symb); ) {
+        weatherHtmlPage.push_back(symb);
+    }
+
+    weatherHtmlPage += weather;
+    weatherHtmlPage += std::string("</font></center></body></html>");
+
+    return weatherHtmlPage;
+}
+
+
 /// @brief parses the query from the client to realize what do the server need to do 
 NWeather::TQueryParams NWeather::TWeatherService::ParseQuery(const std::string& query) const {
     logger << TLevel::Debug << "parsing the query from the client begun\n";
@@ -46,8 +72,15 @@ std::string NWeather::TWeatherService::GetQueryHandler(const std::string& resour
     logger << TLevel::Debug << "handling the 'GET' query for the resource '" << resource << "' begun\n";
 
     std::string htmlPage;
-    std::ifstream resourceStream(std::string("../source/weather_service/resource") + resource + ".html");
     std::ostringstream queryGetResponse;
+    std::ifstream resourceStream;
+
+    try {
+        resourceStream.open(std::string("../source/weather_service/resource") + ResourcesToFiles.at(resource));
+    
+    } catch (std::exception& excp) {
+        resourceStream.close();
+    }
 
     if (!resourceStream.is_open()) {
         logger << TLevel::Warning << "the file '" << (resource.substr(1) + ".txt") << "' wasn't opened (or it doesn't exist)\n\n";
@@ -98,6 +131,8 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
             weather = cache.GetData(city);
         }
 
+        weather = ConvertWeatherToHtml(weather);
+
     } catch (NRequest::TRequestException& excp) {
         if (excp.GetErrorId() == 405 || excp.GetErrorId() == 401) {
             logger << TLevel::Error << "~ PostQueryHandler() error: the wrong data was got: " << excp.what() << "\n\n";
@@ -105,7 +140,7 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
             queryPostResponse << ErrorCodesAndResponses.at("406");
             queryPostResponse << "<html><head><title>406 Not Acceptable</title></head><body><h1>406 Not Acceptable</h1>"
                 "<p>The server couldn't find the weather for this city. Check it and try again.</p></body></html>\r\n";
-
+            
             return queryPostResponse.str();
 
         } else {
@@ -115,13 +150,18 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
             queryPostResponse << ErrorCodesAndResponses.at("502");
             queryPostResponse << "<html><head><title>502 Bad Gateway</title></head><body><h1>502 Bad Gateway</h1>"
                 "<p>The server's error was generated. Try again later.</p></body></html>\r\n";
-
-            return queryPostResponse.str();
         }
+
+        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
+            criticalError = true;
+        }
+
+        return queryPostResponse.str();
 
     } catch (...) {
         logger << TLevel::Fatal << "~ PostQueryHandler() error: the unpredictable error was generated\n\n";
-            
+        criticalError = true;
+
         queryPostResponse << ErrorCodesAndResponses.at("502");
         queryPostResponse << "<html><head><title>502 Bad Gateway</title></head><body><h1>502 Bad Gateway</h1>"
                 "<p>The server's error was generated. Try again later.</p></body></html>\r\n";
@@ -187,10 +227,12 @@ void NWeather::TWeatherService::ServeTheClient(std::unique_ptr<TSocket> clientSo
     } catch (boost::system::system_error& excp) {
         logger << TLevel::Fatal << "~ ServeTheClient() error: error while serving the client:\n";
         logger << "\t" << excp.what() << "\n\n";
+        criticalError = true;
         return;
 
     } catch (...) {
         logger << TLevel::Fatal << "~ ServeTheClient() error: unpredictable error was generated\n\n";
+        criticalError = true;
         return;
     }
  
@@ -200,7 +242,7 @@ void NWeather::TWeatherService::ServeTheClient(std::unique_ptr<TSocket> clientSo
 
 /// @brief main service function
 void NWeather::TWeatherService::RunService() const {
-    logger << TLevel::Info << "SERVICE WAS STARTED\n--------------------\n\n";
+    logger << TLevel::Info << "SERVICE WAS STARTED\n-------------------\n\n";
     
     try {
         boost::asio::io_service weatherService;
@@ -216,17 +258,24 @@ void NWeather::TWeatherService::RunService() const {
                 //std::thread(ServeTheClient, std::move(newClientSock)).detach();
                 ServeTheClient(std::move(newClientSock));
 
+                if (criticalError) {
+                    logger << TLevel::Fatal << "the critical error was generated\n\n";
+                    logger << "-------------------\nSERVICE IS DOWN\n";
+                    break;
+                }
+
             } catch (boost::system::system_error& excp) {
                 std::cerr << "Error\n";
                 logger << TLevel::Fatal << "the acceptor generated the fatal error: " << excp.what() << "\n\n";
-                logger << "--------------------\nSERVICE IS DOWN\n";
+                logger << "-------------------\nSERVICE IS DOWN\n";
                 break;
             }
         }
+
     } catch (boost::system::system_error& excp) {
         std::cerr << "Error";
         logger << TLevel::Fatal << "~ RunService() error: the fatal error was generated: " << excp.what() << "\n\n";
-        logger << "--------------------\n";
+        logger << "-------------------\n";
         logger << TLevel::Info << "SERVICE IS DOWN\n";
     }
 }

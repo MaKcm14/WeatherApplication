@@ -38,6 +38,8 @@ namespace NWeather {
 
         void ServeTheClient(std::unique_ptr<TSocket> clientSock) const;
 
+        std::string ConvertWeatherToHtml(const std::string& weather) const;
+
     private:
         const inline static std::unordered_map<std::string, std::string> ErrorCodesAndResponses = {
             { "404", "HTTP/1.1 404 Not Found\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
@@ -51,6 +53,11 @@ namespace NWeather {
 
             { "502", "HTTP/1.1 502 Bad Gateway\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
                     "Content-Length: 152\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" }            
+        };
+
+        const inline static std::unordered_map<std::string, std::string> ResourcesToFiles = {
+            { "/find", "/find.html" },
+            { "/clouds", "/clouds.jpg" }
         };
     
     };

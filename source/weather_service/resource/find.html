@@ -1,15 +1,30 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        body {
+          background-image: url('http://localhost/clouds');
+        }
+    </style> 
 <head>
     <meta charset="ASCII">
     <title>Weather Application</title>
 </head>
 <body>
-    <h1>Weather Service</h1>
+    <center>
+    <h1>
+        <font size="10", color="black">
+        Weather Service
+        </font>
+    </h1>
     <form action="http://localhost/weather" method="post">
-        <label for="city">Enter the city:</label>
+        <label for="city">
+            <font size="5", color="white">
+            Enter the city:
+            </font>
+        </label>
         <input type="city" id="city" name="city" required>
         <button type="city">Get</button>
     </form>
+    </center>
 </body>
 </html>

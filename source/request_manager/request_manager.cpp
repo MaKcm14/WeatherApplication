@@ -149,25 +149,25 @@ void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) 
     WeatherDesc.clear();
 
     try {
-        WeatherDesc += "- Weather Main Description: ";
-        WeatherDesc += weathJson.at("weather").at(0).at("description").dump() + "\n";
+        WeatherDesc += "<br>- Weather Main Description: ";
+        WeatherDesc += weathJson.at("weather").at(0).at("description").dump() + "</br>";
 
-        WeatherDesc += "- Temperature (C): ";
-        WeatherDesc += GetCelsus(weathJson.at("main").at("temp").dump()) + "\n";
+        WeatherDesc += "<br>- Temperature (C): ";
+        WeatherDesc += GetCelsus(weathJson.at("main").at("temp").dump()) + "</br>";
 
-        WeatherDesc += "- Temperature \"feels_like\" (C): ";
-        WeatherDesc += GetCelsus(weathJson.at("main").at("feels_like").dump()) + "\n";
+        WeatherDesc += "<br>- Temperature \"feels_like\" (C): ";
+        WeatherDesc += GetCelsus(weathJson.at("main").at("feels_like").dump()) + "</br>";
 
-        WeatherDesc += "- Pressure (mmHg): ";
-        WeatherDesc += GetMmHg(weathJson.at("main").at("pressure").dump()) + "\n";
+        WeatherDesc += "<br>- Pressure (mmHg): ";
+        WeatherDesc += GetMmHg(weathJson.at("main").at("pressure").dump()) + "</br>";
 
-        WeatherDesc += "- Wind (speed/gust m/s): ";
+        WeatherDesc += "<br>- Wind (speed/gust m/s): ";
         WeatherDesc += weathJson.at("wind").at("speed").dump() + "/";
 
         if (weathJson.at("wind").contains("gust")) {
-            WeatherDesc += weathJson.at("wind").at("gust").dump() + "\n";
+            WeatherDesc += weathJson.at("wind").at("gust").dump() + "</br>";
         } else {
-            WeatherDesc += "0\n";
+            WeatherDesc += "0</br>";
         }
 
     } catch (nlohmann::json::type_error& typeExcp) {
