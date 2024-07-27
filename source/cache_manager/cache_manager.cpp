@@ -84,7 +84,7 @@ bool NRequest::TCacheManager::IsDataSafety(const std::string& city) const {
     logger << city << "' begun\n";
 
     for (const auto& elem : city) {
-        if (elem >= 65 && elem <= 90 || elem >= 97 && elem <= 122 || elem == '-') {
+        if (elem >= 65 && elem <= 90 || elem >= 97 && elem <= 122 || elem == '-' || elem == ' ') {
             continue;
         } else {
             logger << TLevel::Warning << "the data for the city '" << city << "' are suspicious\n\n";

@@ -54,7 +54,7 @@ namespace NRequest {
 
     private:
         
-        std::string GetUrlCityView();
+        std::string GetUrlCityView() const;
         
         std::string GetWeatherJson();
 

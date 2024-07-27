@@ -7,6 +7,7 @@ TLogger::TLogger()
 
 
 TLogger& operator << (TLogger& logger, const TLogger::ELevel& lev) {
+    logger.LogOut << "# id: " << std::this_thread::get_id() << ":\t";
     if (lev == TLevel::Debug) {
         logger.LogOut << "[Debug]: ";
 

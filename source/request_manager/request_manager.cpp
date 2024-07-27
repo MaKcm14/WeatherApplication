@@ -132,7 +132,7 @@ std::string NRequest::TRequestManager::GetCelsus(std::string temp) const {
 }
 
 
-std::string NRequest::TRequestManager::GetUrlCityView() {
+std::string NRequest::TRequestManager::GetUrlCityView() const {
     std::string urlCityView;
     
     for (const auto& elem : City) {

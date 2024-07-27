@@ -281,12 +281,14 @@ void NWeather::TWeatherService::RunService() {
         boost::asio::ip::tcp::endpoint weatherServiceEp(boost::asio::ip::address::from_string("127.0.0.1"), 80);
         boost::asio::ip::tcp::acceptor weatherAcceptor(weatherService, weatherServiceEp);
 
-        while (true) {
+        ///DEBUG: make while (true) loop after adding the multithreading
+        for (size_t i = 0; i != 5; ++i) {
             std::unique_ptr<TSocket> newClientSock(new TSocket (weatherService));
 
             try {
                 weatherAcceptor.accept(*newClientSock);
-                std::thread(ThreadServeClient, std::move(newClientSock)).detach();
+                //std::thread(ThreadServeClient, std::move(newClientSock)).detach();
+                ThreadServeClient(std::move(newClientSock));
 
                 if (criticalError) {
                     logger << TLevel::Fatal << "the critical error was generated\n\n";

@@ -2,6 +2,7 @@
 
 #    include <fstream>
 #    include <mutex>
+#    include <thread>
 
 /// @brief Simple logger class for make notes about events in the programme
 class TLogger {
