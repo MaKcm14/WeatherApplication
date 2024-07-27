@@ -93,7 +93,7 @@ bool NRequest::TCacheManager::IsDataSafety(const std::string& city) const {
     }
 
     logger << TLevel::Debug << "checking the SQL-injection in the city '" << city;
-    logger << "'was finished correcly: the SQL-injections perhaps aren't in it\n\n";
+    logger << " 'was finished correcly: the SQL-injections perhaps aren't in it\n\n";
     return true;
 }
 

@@ -3,7 +3,8 @@
 TLogger logger;
 
 namespace NWeather {
-    bool criticalError = false;
+    std::atomic<bool> criticalError = false;
+    std::mutex serviceMut;
 }
 
 
@@ -84,10 +85,11 @@ std::string NWeather::TWeatherService::GetQueryHandler(const std::string& resour
 
     if (!resourceStream.is_open()) {
         logger << TLevel::Warning << "the file '" << (resource.substr(1) + ".txt") << "' wasn't opened (or it doesn't exist)\n\n";
-        
+
         queryGetResponse << ErrorCodesAndResponses.at("404");
+        queryGetResponse << "Content-Length: " << 150 << "\r\n\r\n";
         queryGetResponse << "<html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1>" \
-                    "<p>The requested URL was not found on this server.</p></body></html>\r\n";
+                    "<p>The requested resource was not found on this server.</p></body></html>\r\n";
         
         return queryGetResponse.str();
     }
@@ -98,9 +100,9 @@ std::string NWeather::TWeatherService::GetQueryHandler(const std::string& resour
 
     queryGetResponse << "HTTP/1.1 200 OK\r\n";
     queryGetResponse << "Cache-Control: no-store\r\n";
-    queryGetResponse << "Server: 127.0.0.1:8080\r\n";
+    queryGetResponse << "Server: localhost\r\n";
     queryGetResponse << "Content-Length: " << htmlPage.size() << "\r\n";
-    queryGetResponse << "Connection: Closed\r\n";
+    queryGetResponse << "Connection: Close\r\n";
     queryGetResponse << "Content-Type: text/html; charset=ascii\r\n\r\n";
     queryGetResponse << htmlPage << "\r\n";
 
@@ -121,6 +123,7 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
     try {
         NRequest::TRequestManager request;
         NRequest::TCacheManager cache;
+
         std::string city = data.substr(data.find("=") + 1);
 
         if (cache.IsDataExpired(city)) {
@@ -134,25 +137,41 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
         weather = ConvertWeatherToHtml(weather);
 
     } catch (NRequest::TRequestException& excp) {
-        if (excp.GetErrorId() == 405 || excp.GetErrorId() == 401) {
+        if (excp.GetErrorId() == 401 || excp.GetErrorId() == 404 || excp.GetErrorId() == 405) {
             logger << TLevel::Error << "~ PostQueryHandler() error: the wrong data was got: " << excp.what() << "\n\n";
 
-            queryPostResponse << ErrorCodesAndResponses.at("406");
-            queryPostResponse << "<html><head><title>406 Not Acceptable</title></head><body><h1>406 Not Acceptable</h1>"
+            queryPostResponse << ErrorCodesAndResponses.at("400");
+            queryPostResponse << "Content-Length: " << 177 << "\r\n\r\n";
+            queryPostResponse << "<html><head><title>400 Bad Request</title></head><body><h1>400 Bad Request</h1>"
                 "<p>The server couldn't find the weather for this city. Check it and try again.</p></body></html>\r\n";
             
             return queryPostResponse.str();
 
-        } else {
-            logger << TLevel::Fatal << "~ PostQueryHandler() error: tthe error that don't let handle the query was generated: ";
+        } else if (excp.GetErrorId() == 501) {
+            logger << TLevel::Fatal << "~ PostQueryHandler() error: the meteo-server has problem: ";
             logger << excp.what() << "\n\n";
 
             queryPostResponse << ErrorCodesAndResponses.at("502");
+            queryPostResponse << "Content-Length: " << 155 << "\r\n\r\n";
             queryPostResponse << "<html><head><title>502 Bad Gateway</title></head><body><h1>502 Bad Gateway</h1>"
-                "<p>The server's error was generated. Try again later.</p></body></html>\r\n";
+                "<p>The meteo-server has problem. Please try again later.</p></body></html>\r\n";
+            
+        } else {
+            logger << TLevel::Error << "~ PostQueryHandler() error: internal server error was generated: ";
+            logger << excp.what() << "\n\n";
+
+            queryPostResponse << ErrorCodesAndResponses.at("500");
+            queryPostResponse << "Content-Length: " << 193 << "\r\n\r\n";
+            queryPostResponse << "<html><head><title>500 Internal Server Error</title>"
+                "</head><body><h1>500 Internal Server Error</h1>"
+                "<p>There's error that was generated on the server. "
+                "Please try again later.</p></body></html>\r\n";
+            
         }
 
-        if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
+        if (auto errorId = excp.GetErrorId(); errorId != 401 && errorId != 404 && errorId != 405
+            && errorId != 501) 
+        {
             criticalError = true;
         }
 
@@ -160,18 +179,22 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
 
     } catch (...) {
         logger << TLevel::Fatal << "~ PostQueryHandler() error: the unpredictable error was generated\n\n";
+
         criticalError = true;
 
-        queryPostResponse << ErrorCodesAndResponses.at("502");
-        queryPostResponse << "<html><head><title>502 Bad Gateway</title></head><body><h1>502 Bad Gateway</h1>"
-                "<p>The server's error was generated. Try again later.</p></body></html>\r\n";
+        queryPostResponse << ErrorCodesAndResponses.at("500");
+        queryPostResponse << "Content-Length: " << 193 << "\r\n\r\n";
+        queryPostResponse << "<html><head><title>500 Internal Server Error</title>"
+                "</head><body><h1>500 Internal Server Error</h1>"
+                "<p>There's error that was generated on the server. "
+                "Please try again later.</p></body></html>\r\n";
 
         return queryPostResponse.str();
     }
 
     queryPostResponse << "HTTP/1.1 200 OK\r\n";
     queryPostResponse << "Cache-Control: no-store\r\n";
-    queryPostResponse << "Server: 127.0.0.1:8080\r\n";
+    queryPostResponse << "Server: localhost\r\n";
     queryPostResponse << "Content-Length: " << weather.size() << "\r\n";
     queryPostResponse << "Connection: Closed\r\n";
     queryPostResponse << "Content-Type: text/html; charset=ascii\r\n\r\n";
@@ -203,6 +226,7 @@ std::string NWeather::TWeatherService::FormResponse(const std::string& query) co
         std::ostringstream queryResponse;
 
         queryResponse << ErrorCodesAndResponses.at("405");
+        queryResponse << "Content-Length: " << 161 << "\r\n\r\n";
         queryResponse << "<html><head><title>405 Method Not Allowed</title></head><body><h1>Method Not Allowed</h1>"
                 "<p>The method is not allowed. Try again with others.</p></body></html>\r\n";
         
@@ -235,16 +259,24 @@ void NWeather::TWeatherService::ServeTheClient(std::unique_ptr<TSocket> clientSo
         criticalError = true;
         return;
     }
- 
+    
     logger << TLevel::Debug << "the client was served correctly\n\n";
 }
 
 
+void NWeather::TWeatherService::ThreadServeClient(std::unique_ptr<TSocket> clientSock) {
+    NWeather::TWeatherService service;
+    service.ServeTheClient(std::move(clientSock));
+}
+
+
 /// @brief main service function
-void NWeather::TWeatherService::RunService() const {
+void NWeather::TWeatherService::RunService() {
     logger << TLevel::Info << "SERVICE WAS STARTED\n-------------------\n\n";
     
     try {
+        NRequest::ConfigureRequestService();
+
         boost::asio::io_service weatherService;
         boost::asio::ip::tcp::endpoint weatherServiceEp(boost::asio::ip::address::from_string("127.0.0.1"), 80);
         boost::asio::ip::tcp::acceptor weatherAcceptor(weatherService, weatherServiceEp);
@@ -254,9 +286,7 @@ void NWeather::TWeatherService::RunService() const {
 
             try {
                 weatherAcceptor.accept(*newClientSock);
-            
-                //std::thread(ServeTheClient, std::move(newClientSock)).detach();
-                ServeTheClient(std::move(newClientSock));
+                std::thread(ThreadServeClient, std::move(newClientSock)).detach();
 
                 if (criticalError) {
                     logger << TLevel::Fatal << "the critical error was generated\n\n";
@@ -267,6 +297,12 @@ void NWeather::TWeatherService::RunService() const {
             } catch (boost::system::system_error& excp) {
                 std::cerr << "Error\n";
                 logger << TLevel::Fatal << "the acceptor generated the fatal error: " << excp.what() << "\n\n";
+                logger << "-------------------\nSERVICE IS DOWN\n";
+                break;
+
+            } catch (...) {
+                std::cerr << "Error\n";
+                logger << TLevel::Fatal << "the unpredictable error was generated\n\n";
                 logger << "-------------------\nSERVICE IS DOWN\n";
                 break;
             }

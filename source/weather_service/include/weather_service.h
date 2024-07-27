@@ -1,5 +1,6 @@
 #ifndef WEATHER_SERVICE_HEADER
 
+#    include <atomic>
 #    include "boost/asio.hpp"
 #    include "cache_manager.h"
 #    include <memory>
@@ -21,13 +22,11 @@ namespace NWeather {
     public:
         using TSocket = boost::asio::ip::tcp::socket; 
 
-        TWeatherService() {
-            NRequest::ConfigureRequestService();
-        }
-
-        void RunService() const;
+        static void RunService();
 
     private:
+        static void ThreadServeClient(std::unique_ptr<TSocket> clientSock);
+
         TQueryParams ParseQuery(const std::string& query) const;
 
         std::string GetQueryHandler(const std::string& resource) const;
@@ -42,24 +41,27 @@ namespace NWeather {
 
     private:
         const inline static std::unordered_map<std::string, std::string> ErrorCodesAndResponses = {
-            { "404", "HTTP/1.1 404 Not Found\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
-                    "Content-Length: 145\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" },
+            { "400", "HTTP/1.1 400 Bad Request\r\nCache-Control: no-store\r\nServer: localhost\r\n" \
+                    "Connection: Close\r\nContent-Type: text/html; charset=ascii\r\n" },
+            
+            { "404", "HTTP/1.1 404 Not Found\r\nCache-Control: no-store\r\nServer: localhost\r\n" \
+                    "Connection: Close\r\nContent-Type: text/html; charset=ascii\r\n" },
 
-            { "405", "HTTP/1.1 405 Not Acceptable\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
-                    "Content-Length: 161\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" },
+            { "405", "HTTP/1.1 405 Method Not Allowed\r\nCache-Control: no-store\r\nServer: localhost\r\n" \
+                    "Connection: Close\r\nContent-Type: text/html; charset=ascii\r\n" },
+            
+            { "500", "HTTP/1.1 500 Internal Server Error\r\nCache-Control: no-store\r\nServer: localhost\r\n" \
+                    "Connection: Close\r\nContent-Type: text/html; charset=ascii\r\n" },
 
-            { "406", "HTTP/1.1 406 Not Acceptable\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
-                    "Content-Length: 183\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" },
-
-            { "502", "HTTP/1.1 502 Bad Gateway\r\nCache-Control: no-store\r\nServer: 127.0.0.1:8080\r\n" \
-                    "Content-Length: 152\r\nConnection: Closed\r\nContent-Type: text/html; charset=ascii\r\n\r\n" }            
+            { "502", "HTTP/1.1 502 Bad Gateway\r\nCache-Control: no-store\r\nServer: localhost\r\n" \
+                    "Connection: Close\r\nContent-Type: text/html; charset=ascii\r\n" }            
         };
 
         const inline static std::unordered_map<std::string, std::string> ResourcesToFiles = {
             { "/find", "/find.html" },
             { "/clouds", "/clouds.jpg" }
         };
-    
+
     };
 }
 

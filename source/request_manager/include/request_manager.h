@@ -9,7 +9,6 @@
 #    include <nlohmann/json.hpp>
 #    include "request_exception.h"
 #    include <sstream>
-#    include <thread>
 #    include <unordered_map>
 #    include <vector>
 

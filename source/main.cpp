@@ -3,8 +3,7 @@
 
 int main() {
     try {
-        NWeather::TWeatherService service;
-        service.RunService();
+        NWeather::TWeatherService::RunService();
 
     } catch (NRequest::TRequestException& excp) {
         std::cout << excp.what() << std::endl;
@@ -17,7 +16,6 @@ int main() {
         
     } catch (...) {
         std::cout << "error generated\n";
-
     }
 
     return 0;

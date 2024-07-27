@@ -6,6 +6,10 @@ namespace NRequest {
     nlohmann::json configJson;
 }
 
+namespace NWeather {
+    extern std::mutex serviceMut;
+}
+
 
 void NRequest::InitConfig() {
     std::ifstream configStream("../configuration.json");
@@ -149,7 +153,7 @@ void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) 
     WeatherDesc.clear();
 
     try {
-        WeatherDesc += "<br>- Weather Main Description: ";
+        WeatherDesc += "<br>- Basic Weather Description: ";
         WeatherDesc += weathJson.at("weather").at(0).at("description").dump() + "</br>";
 
         WeatherDesc += "<br>- Temperature (C): ";
