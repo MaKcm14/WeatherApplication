@@ -5,7 +5,28 @@
 #    include <sstream>
 #    include <vector>
 
-class TTestPostgresORM : private NRequest::TPostgresConnection {
+ /// @brief Describes the connection to the DB
+class TPostgresConnection {
+public:
+    TPostgresConnection();
+
+    ~TPostgresConnection() {
+        PQfinish(Connection);
+    }
+
+    auto GetConnectionStatus() const noexcept;
+
+    PGconn* GetConnection() noexcept {
+        return Connection;
+    }
+
+protected:
+    PGconn* Connection;
+
+};
+
+
+class TTestPostgresORM : private TPostgresConnection {
 public:
     std::vector<std::string> Select(const std::string& query);
 

@@ -1,5 +1,9 @@
 #include "include/test_postgres_orm.h"
 
+namespace NRequest {
+    extern nlohmann::json configJson;
+}
+
 /// @param shift in the mins 
 std::string TTestPostgresORM::GetCurTimeWithShift(int32_t shift) {
     auto newTime = time(NULL) + shift * 60;
@@ -15,6 +19,27 @@ std::string TTestPostgresORM::GetCurTimeWithShift(int32_t shift) {
     return timeStream.str();
 }
 
+TPostgresConnection::TPostgresConnection() {
+     try {
+        std::string password = NRequest::configJson.at("db_password").dump();
+
+        Connection = PQsetdbLogin("127.0.0.1", "5432", nullptr, nullptr, "postgres", "postgres", 
+            password.substr(1, password.size() - 2).c_str());
+
+        if (PQstatus(Connection) == CONNECTION_BAD) {
+            throw NDataBase::TDataBaseException("connection to the DB wasn't set correctly");
+        } 
+
+    } catch (nlohmann::json::type_error& typeExcp) {
+        throw NRequest::TRequestException(typeExcp.what(), 502);
+
+    } catch (nlohmann::json::parse_error& parseExcp) {
+        throw NRequest::TRequestException(parseExcp.what(), 502);
+
+    } catch (std::exception& excp) {
+        throw NDataBase::TDataBaseException(excp.what()); 
+    }
+}
 
 std::vector<std::string> TTestPostgresORM::Select(const std::string& query) {
     std::vector<std::string> data;

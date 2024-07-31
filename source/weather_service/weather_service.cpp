@@ -2,6 +2,10 @@
 
 TLogger logger;
 
+namespace NRequest {
+    extern nlohmann::json configJson;
+}
+
 namespace NWeather {
     std::atomic<bool> criticalError = false;
     std::mutex serviceMut;
@@ -122,7 +126,9 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
 
     try {
         NRequest::TRequestManager request;
-        NRequest::TCacheManager cache;
+
+        logger << TLevel::Info << "set connection to the DB\n";
+        NRequest::TCacheManager cache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", NRequest::configJson.at("db_password").dump()));
 
         std::string city = data.substr(data.find("=") + 1);
 
@@ -175,6 +181,21 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
             criticalError = true;
         }
 
+        return queryPostResponse.str();
+
+    } catch (NDataBase::TDataBaseException& excp) {
+        logger << TLevel::Fatal << "~ PostQueryHandler() error: internal server error was generated (DB): ";
+        logger << excp.what() << "\n\n";
+
+        criticalError = true;
+
+        queryPostResponse << ErrorCodesAndResponses.at("500");
+        queryPostResponse << "Content-Length: " << 193 << "\r\n\r\n";
+        queryPostResponse << "<html><head><title>500 Internal Server Error</title>"
+            "</head><body><h1>500 Internal Server Error</h1>"
+            "<p>There's error that was generated on the server. "
+            "Please try again later.</p></body></html>\r\n";
+        
         return queryPostResponse.str();
 
     } catch (...) {
@@ -283,7 +304,7 @@ void NWeather::TWeatherService::RunService() {
 
         ///DEBUG: make while (true) loop after adding the multithreading
         for (size_t i = 0; i != 5; ++i) {
-            std::unique_ptr<TSocket> newClientSock(new TSocket (weatherService));
+            std::unique_ptr<TSocket> newClientSock = std::make_unique<TSocket>(weatherService);
 
             try {
                 weatherAcceptor.accept(*newClientSock);
