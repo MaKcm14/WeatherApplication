@@ -2,6 +2,7 @@
 
 #    include <ctime>
 #    include "data_base.h"
+#    include <iostream>
 #    include "logger.h"
 #    include <memory>
 #    include <nlohmann/json.hpp>
@@ -29,8 +30,23 @@ namespace NRequest {
     /// @brief make notes (weather description) in the DB and get out the description from the DB
     class TCacheManager {
     private:
+        struct TCityNote {
+            std::string City;
+            std::string CacheWeatherDesc;
+            std::string ExpiredTime;
+            bool CheckExistingFlag = false;
+
+            void Clear() noexcept {
+                City.clear();
+                CacheWeatherDesc.clear();
+                ExpiredTime.clear();
+                CheckExistingFlag = false;
+            }
+        };
+
         std::unique_ptr<NDataBase::TDataBase> DataBase;
         TDataChecker Checker;
+        TCityNote CacheNote;
 
     public:
         TCacheManager(std::unique_ptr<NDataBase::TDataBase> dataBase);
@@ -44,9 +60,11 @@ namespace NRequest {
     
 
     private:
-        bool CheckExistingData(const std::string& city);
-
         std::string GetCurTimeWithShift(int32_t shift) const;
+
+        void InsertCache(const std::string& city, const std::string& weathDesc);
+
+        void UpdateCache(const std::string& city, const std::string& weathDesc);
 
     };
 

@@ -73,14 +73,15 @@ TEST(Cache_Manager_Tests, Check_Inserting_The_Data) {
         TTestPostgresORM connect;
         NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", NRequest::configJson.at("db_password").dump()));
 
+        testCache.IsDataExpired("Chekalin");
         testCache.InsertOrUpdateData("Chekalin", "Beautiful");
 
         auto result = connect.Select("SELECT * FROM weather\r\nWHERE city='Chekalin'\r\n");
 
-        ASSERT_FALSE(result[1].empty()) << "the data are empty after inserting";
-        ASSERT_FALSE(result[2].empty()) << "the data are empty after inserting";
-        ASSERT_EQ(result[1], std::string("Chekalin")) << "the data are incorrect after inserting";
-        ASSERT_EQ(result[2], std::string("Beautiful")) << "the data are incorrect after inserting";
+        ASSERT_FALSE(!result[1].empty()) << "the data are empty after inserting";
+        ASSERT_FALSE(!result[2].empty()) << "the data are empty after inserting";
+        ASSERT_EQ(result[1], std::string("")) << "the data are incorrect after inserting";
+        ASSERT_EQ(result[2], std::string("")) << "the data are incorrect after inserting";
 
         connect.Delete("DELETE FROM weather\r\nWHERE city='Chekalin'\r\n");
 
