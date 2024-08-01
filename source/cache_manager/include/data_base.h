@@ -2,29 +2,32 @@
 
 #    include "data_base_exception.h"
 #    include <memory>
-#    include <nlohmann/json.hpp>
 #    include "postgresql/libpq-fe.h"
 #    include <vector>
 
 namespace NDataBase {
-    /// @brief abstract class for every RELATIONAL DB
+
+    /// @brief abstract class for every RDB
     class TDataBase {
     public:
-        virtual std::vector<std::vector<std::string>> Select(const std::string& query) = 0;
+        virtual std::vector<std::vector<std::string>> ISelect(const std::string& query) = 0;
 
-        virtual void Insert(const std::string& query) = 0;
+        virtual void IInsert(const std::string& query) = 0;
 
-        virtual void Update(const std::string& query) = 0;
+        virtual void IUpdate(const std::string& query) = 0;
 
-        virtual void Delete(const std::string& query) = 0;
+        virtual void IDelete(const std::string& query) = 0;
 
-        virtual void CreateTable(const std::string& query) = 0;
+        virtual void ICreateTable(const std::string& query) = 0;
 
     };
 
 
     /// @brief main class for PostgreSql DB
     class TPostgreSql : public TDataBase {
+    private:
+        PGconn* Connection;
+
     public:
         TPostgreSql(const std::string& ip, const std::string& port, const std::string& password);
 
@@ -39,6 +42,7 @@ namespace NDataBase {
             PQfinish(Connection);
         }
 
+
         TPostgreSql& operator = (const TPostgreSql& postgres) = delete;
 
         TPostgreSql& operator = (TPostgreSql&& postgres) {
@@ -47,22 +51,23 @@ namespace NDataBase {
             return *this;
         }
 
-        std::vector<std::vector<std::string>> Select(const std::string& query) override;
 
-        void Insert(const std::string& query) override;
+        std::vector<std::vector<std::string>> ISelect(const std::string& query) override;
 
-        void Update(const std::string& query) override;
+        void IInsert(const std::string& query) override;
 
-        void Delete(const std::string& query) override;
+        void IUpdate(const std::string& query) override;
 
-        void CreateTable(const std::string& query) override;
+        void IDelete(const std::string& query) override;
 
-    private:
-        PGconn* Connection;
+        void ICreateTable(const std::string& query) override;
 
     };
+
 }
 
+
 #endif
+
 
 #define DATA_BASE_HEADER

@@ -18,7 +18,7 @@ namespace NRequest {
     ///       - 501: (boost::asio exceptions)
     ///       - 502: (nlohmann::json exceptions)
     ///       - 503: (STL exceptions)
-    ///       - 504: (PostgreSQL excetptions)
+    ///       - 504: (PostgreSQL exceptions)
     
     class TRequestException : public std::exception {
     public:

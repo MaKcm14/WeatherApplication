@@ -61,7 +61,7 @@ endif()
 if (PostgreSQL_FOUND)
     message("-- packages for PostgreSQL-10.0 and upper were found")
     include_directories(${PostgreSQL_INCLUDE_DIRS})
-    target_link_libraries(cache_manager_lib PUBLIC PostgreSQL::PostgreSQL)
+    target_link_libraries(data_base_lib PUBLIC PostgreSQL::PostgreSQL)
 endif()
 
 if (nlohmann_json_FOUND)

@@ -14,32 +14,39 @@ extern TLogger logger;
 
 namespace NRequest {
 
-    extern void ConfigureRequestService();
-
     extern nlohmann::json configJson;
 
+    extern void ConfigureRequestService();
+
+    /// @brief check the data that was got from the DB (the part of the TCacheManager) 
     class TDataChecker {
     public:
         bool IsDataSafety(const std::string& city) const;
 
     };
 
-    /// @brief Let make notes (weather description) into the DB and get out the description from DB
+
+    /// @brief make notes (weather description) in the DB and get out the description from the DB
     class TCacheManager {
+    private:
+        std::unique_ptr<NDataBase::TDataBase> DataBase;
+        TDataChecker Checker;
+
     public:
         TCacheManager(std::unique_ptr<NDataBase::TDataBase> dataBase);
+        
 
         bool IsDataExpired(const std::string& city);
 
         void InsertOrUpdateData(const std::string& city, const std::string& weathDesc);
 
         std::string GetData(const std::string& city);
-
-        bool CheckExistingData(const std::string& city);
+    
 
     private:
-        std::unique_ptr<NDataBase::TDataBase> DataBase;
-        TDataChecker Checker;
+        bool CheckExistingData(const std::string& city);
+
+        std::string GetCurTimeWithShift(int32_t shift) const;
 
     };
 
@@ -47,5 +54,6 @@ namespace NRequest {
 
 
 #endif
+
 
 #define CACHE_MANAGER_HEADER

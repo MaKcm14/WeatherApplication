@@ -128,7 +128,8 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
         NRequest::TRequestManager request;
 
         logger << TLevel::Info << "set connection to the DB\n";
-        NRequest::TCacheManager cache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", NRequest::configJson.at("db_password").dump()));
+        NRequest::TCacheManager cache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", 
+            NRequest::configJson.at("db_password").dump()));
 
         std::string city = data.substr(data.find("=") + 1);
 
@@ -303,7 +304,7 @@ void NWeather::TWeatherService::RunService() {
         boost::asio::ip::tcp::acceptor weatherAcceptor(weatherService, weatherServiceEp);
 
         ///DEBUG: make while (true) loop after adding the multithreading
-        for (size_t i = 0; i != 5; ++i) {
+        for (size_t i = 0; i != 4; ++i) {
             std::unique_ptr<TSocket> newClientSock = std::make_unique<TSocket>(weatherService);
 
             try {

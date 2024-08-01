@@ -4,21 +4,6 @@ namespace NRequest {
     extern nlohmann::json configJson;
 }
 
-/// @param shift in the mins 
-std::string TTestPostgresORM::GetCurTimeWithShift(int32_t shift) {
-    auto newTime = time(NULL) + shift * 60;
-    tm* newUTCTime = gmtime(&newTime);
-    std::ostringstream timeStream;
-
-    timeStream << (newUTCTime->tm_year + 1900) << "-";
-    timeStream << (newUTCTime->tm_mon + 1) << "-";
-    timeStream << newUTCTime->tm_mday << " ";
-    timeStream << newUTCTime->tm_hour << ":";
-    timeStream << newUTCTime->tm_min << ":00";
-
-    return timeStream.str();
-}
-
 TPostgresConnection::TPostgresConnection() {
      try {
         std::string password = NRequest::configJson.at("db_password").dump();
@@ -40,6 +25,23 @@ TPostgresConnection::TPostgresConnection() {
         throw NDataBase::TDataBaseException(excp.what()); 
     }
 }
+
+
+/// @param shift in the mins 
+std::string TTestPostgresORM::GetCurTimeWithShift(int32_t shift) {
+    auto newTime = time(NULL) + shift * 60;
+    tm* newUTCTime = gmtime(&newTime);
+    std::ostringstream timeStream;
+
+    timeStream << (newUTCTime->tm_year + 1900) << "-";
+    timeStream << (newUTCTime->tm_mon + 1) << "-";
+    timeStream << newUTCTime->tm_mday << " ";
+    timeStream << newUTCTime->tm_hour << ":";
+    timeStream << newUTCTime->tm_min << ":00";
+
+    return timeStream.str();
+}
+
 
 std::vector<std::string> TTestPostgresORM::Select(const std::string& query) {
     std::vector<std::string> data;
