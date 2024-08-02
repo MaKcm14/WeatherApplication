@@ -46,6 +46,7 @@ namespace NDataBase {
         TPostgreSql& operator = (const TPostgreSql& postgres) = delete;
 
         TPostgreSql& operator = (TPostgreSql&& postgres) {
+            PQfinish(Connection);
             Connection = postgres.Connection;
             postgres.Connection = nullptr;
             return *this;

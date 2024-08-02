@@ -25,6 +25,7 @@ public:
         LogOut.close();
     }
 
+
     template <typename TType>
     friend TLogger& operator << (TLogger& logger, const TType& data);
 
@@ -43,5 +44,6 @@ TLogger& operator << (TLogger& logger, const TType& data) {
 
 
 #endif
+
 
 #define LOGGER_HEADER

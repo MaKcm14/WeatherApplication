@@ -3,7 +3,10 @@
 #include "test_postgres_orm.h"
 
 TEST(Cache_Manager_Tests, Check_Getting_Empty_Data) {
-    NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", NRequest::configJson.at("db_password").dump()));
+    NRequest::TCacheManager testCache(
+        std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", 
+        NRequest::configJson.at("db_password").dump())
+    );
 
     try {
         testCache.GetData("");
@@ -18,7 +21,9 @@ TEST(Cache_Manager_Tests, Check_Getting_Empty_Data) {
 
 
 TEST(Cache_Manager_Tests, Check_Expiring_The_Empty_Data) {
-    NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", NRequest::configJson.at("db_password").dump()));
+    NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", 
+        NRequest::configJson.at("db_password").dump())
+    );
 
     try {
         testCache.IsDataExpired("");
@@ -33,7 +38,9 @@ TEST(Cache_Manager_Tests, Check_Expiring_The_Empty_Data) {
 
 
 TEST(Cache_Manager_Tests, Check_Inserting_And_Updating_Empty_Data) {
-    NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", NRequest::configJson.at("db_password").dump()));
+    NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", 
+        NRequest::configJson.at("db_password").dump())
+    );
 
     try {
         testCache.InsertOrUpdateData("", "");
@@ -49,8 +56,10 @@ TEST(Cache_Manager_Tests, Check_Inserting_And_Updating_Empty_Data) {
 /// this test can drop your table:
 TEST(Cache_Manager_Tests, Check_Getting_The_Suspicious_Data) {
     try {
-        TTestPostgresORM connect;
-        NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", NRequest::configJson.at("db_password").dump()));
+        TTestPostgres connect;
+        NRequest::TCacheManager testCache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", 
+            NRequest::configJson.at("db_password").dump())
+        );
         
         connect.Insert("INSERT INTO weather (city, description, expires)\r\n"
                        "VALUES ('Chekalin', 'Beautiful', '" + connect.GetCurTimeWithShift(5) + "')\r\n");

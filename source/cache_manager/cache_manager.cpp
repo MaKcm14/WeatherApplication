@@ -51,9 +51,25 @@ std::string NRequest::TCacheManager::GetCurTimeWithShift(int32_t shift) const {
     std::ostringstream timeStream;
 
     timeStream << (newUTCTime->tm_year + 1900) << "-";
+    
+    if ((newUTCTime->tm_mon + 1) < 10) {
+        timeStream << "0";
+    }
     timeStream << (newUTCTime->tm_mon + 1) << "-";
+
+    if (newUTCTime->tm_mday < 10) {
+        timeStream << "0";
+    }
     timeStream << newUTCTime->tm_mday << " ";
+
+    if (newUTCTime->tm_hour < 10) {
+        timeStream << "0";
+    }
     timeStream << newUTCTime->tm_hour << ":";
+
+    if (newUTCTime->tm_min < 10) {
+        timeStream << "0";
+    }
     timeStream << newUTCTime->tm_min << ":00";
 
     return timeStream.str();
@@ -71,7 +87,7 @@ std::string NRequest::TCacheManager::GetData(const std::string& city) {
 
     if (city.empty()) {
         CacheNote.Clear();
-        logger << TLevel::Error << "~ IsDataExpired() warning: the city name isn't correct (empty)\n\n";
+        logger << TLevel::Error << "~ GetData() error: the city name isn't correct (empty)\n\n";
         throw TRequestException("the city name isn't correct (empty)", 401);
     }
 
@@ -137,11 +153,6 @@ bool NRequest::TCacheManager::IsDataExpired(const std::string& city) {
     logger << "finished correctly\n";
     
     if (existingData.empty() || existingData[0][3] < GetCurTimeWithShift(0)) {
-        
-        ///DEBUG:
-        std::cout << existingData[0][3] << " " << GetCurTimeWithShift(0) << std::endl;
-        ///
-
         logger << TLevel::Debug << "the note for the city '" << city << "' wasn't found/";
         logger << "the description has expired time status\n\n";
         return true;
@@ -211,7 +222,7 @@ void NRequest::TCacheManager::InsertOrUpdateData(const std::string& city, const 
 
     if (city.empty() || weathDesc.empty()) {
         CacheNote.Clear();
-        logger << TLevel::Error << "~ IsDataExpired() warning: the city name/weather description "
+        logger << TLevel::Error << "~ InsertOrUpdate() error: the city name/weather description "
             "isn't correct (empty)\n\n";
         
         throw TRequestException("the city name/weather description isn't correct (empty)", 401);

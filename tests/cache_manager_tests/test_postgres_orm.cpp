@@ -28,7 +28,7 @@ TPostgresConnection::TPostgresConnection() {
 
 
 /// @param shift in the mins 
-std::string TTestPostgresORM::GetCurTimeWithShift(int32_t shift) {
+std::string TTestPostgres::GetCurTimeWithShift(int32_t shift) {
     auto newTime = time(NULL) + shift * 60;
     tm* newUTCTime = gmtime(&newTime);
     std::ostringstream timeStream;
@@ -43,7 +43,7 @@ std::string TTestPostgresORM::GetCurTimeWithShift(int32_t shift) {
 }
 
 
-std::vector<std::string> TTestPostgresORM::Select(const std::string& query) {
+std::vector<std::string> TTestPostgres::Select(const std::string& query) {
     std::vector<std::string> data;
     auto result = PQexec(Connection, query.c_str());
 
@@ -69,7 +69,7 @@ std::vector<std::string> TTestPostgresORM::Select(const std::string& query) {
 }
 
 
-void TTestPostgresORM::Insert(const std::string& query) {
+void TTestPostgres::Insert(const std::string& query) {
     auto result = PQexec(Connection, query.c_str());
 
     if (PQresultStatus(result) == PGRES_FATAL_ERROR || 
@@ -83,7 +83,7 @@ void TTestPostgresORM::Insert(const std::string& query) {
 }
 
 
-void TTestPostgresORM::Update(const std::string& query) {
+void TTestPostgres::Update(const std::string& query) {
     auto result = PQexec(Connection, query.c_str());
 
     if (PQresultStatus(result) == PGRES_FATAL_ERROR || 
@@ -97,7 +97,7 @@ void TTestPostgresORM::Update(const std::string& query) {
 }
 
 
-void TTestPostgresORM::Delete(const std::string& query) {
+void TTestPostgres::Delete(const std::string& query) {
     auto result = PQexec(Connection, query.c_str());
 
     if (PQresultStatus(result) == PGRES_FATAL_ERROR || 

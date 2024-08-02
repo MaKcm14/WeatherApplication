@@ -304,7 +304,7 @@ void NWeather::TWeatherService::RunService() {
         boost::asio::ip::tcp::acceptor weatherAcceptor(weatherService, weatherServiceEp);
 
         ///DEBUG: make while (true) loop after adding the multithreading
-        for (size_t i = 0; i != 5; ++i) {
+        for (size_t i = 0; i != 50; ++i) {
             std::unique_ptr<TSocket> newClientSock = std::make_unique<TSocket>(weatherService);
 
             try {

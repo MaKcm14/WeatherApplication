@@ -26,7 +26,7 @@ protected:
 };
 
 
-class TTestPostgresORM : private TPostgresConnection {
+class TTestPostgres : private TPostgresConnection {
 public:
     std::vector<std::string> Select(const std::string& query);
 
@@ -43,5 +43,6 @@ public:
 
 
 #endif
+
 
 #define TEST_POSTGRES_ORM
