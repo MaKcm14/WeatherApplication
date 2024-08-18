@@ -5,7 +5,7 @@
 TEST(Request_Manager_Tests, Time_Test) {
     NRequest::TRequestManager request;
     try {
-        request.GetWeather("Moscow");
+        request.GetWeatherTemplate("Moscow");
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;

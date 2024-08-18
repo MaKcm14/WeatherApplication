@@ -5,7 +5,6 @@
 #    include <fstream>
 #    include <iostream>
 #    include "logger.h"
-#    include <mutex>
 #    include <nlohmann/json.hpp>
 #    include "request_exception.h"
 #    include <sstream>
@@ -14,69 +13,77 @@
 
 namespace NRequest {
 
-    void InitNetParams();
+    using TTcpSocket = boost::asio::ip::tcp::socket;
 
     void InitConfig();
 
     void ConfigureRequestService();
 
-    /// @brief Let make requests for 'api.openweathermap.org'
-    class TRequestManager {
+    /// @brief makes converting for different objects
+    class TConverter {
     public:
-        using TTcpSocket = boost::asio::ip::tcp::socket;
+        std::string ConvertToUrlView(const std::string& obj) const;
 
-        TRequestManager();
+        std::string ConvertPascalsToMmHg(std::string pressure) const;
 
-        TRequestManager(const std::string& city);
+        std::string ConvertKelvinsToCelsus(std::string temp) const;
 
-        ~TRequestManager() {
+        std::string ConvertWeatherJsonToWeatherTemplate(const nlohmann::json& weathJson);
+
+    };
+
+
+    /// @brief main weather module requests for weather
+    class TWeatherModule {
+    public:
+        TWeatherModule();
+
+        ~TWeatherModule() {
             SocketWeath.close();
         }
 
-        std::string GetWeather();
-
-        std::string GetWeather(const std::string& city);
+        
+        std::string TryGetWeatherTemplate(const std::string& city);
 
         std::string GetCity() const noexcept {
             return City;
         }
 
-        void SetCity(const std::string& city) noexcept {
-            City = city;
-            WeatherDesc.clear();
+        std::string GetWeatherDescription() const noexcept {
+            return WeatherDesc;
         }
+        
+        static void InitWeatherApiKey();
 
-        bool IsWeathDescInit() const noexcept {
-            return !WeatherDesc.empty();
-        }
+        static void InitWeatherEndpoints();
 
-        static void InitApiKey();
 
     private:
-        
-        std::string GetUrlCityView() const;
-        
         std::string GetWeatherJson();
 
-        std::string GetMmHg(std::string pressure) const;
-
-        std::string GetCelsus(std::string temp) const;
-
-        void SetWeatherDesc(const nlohmann::json& weathJson);
-
-        std::string GetWeatherService();
-
-        std::string GetWeatherService(const std::string& city);
 
     public:
         inline static boost::asio::io_service RequestService;
-        inline static boost::asio::ip::tcp::endpoint EpWeatherRequest;
+        inline static boost::asio::ip::tcp::endpoint EpOpenWeatherRequest;
 
     private:
-        inline static std::string ApiKey = "";
+        TConverter Converter;
         TTcpSocket SocketWeath;
         std::string City;
         std::string WeatherDesc;
+        inline static std::string OpenWeatherApiKey = "";
+
+    };
+    
+
+    /// @brief makes requests
+    class TRequestManager {
+    public:
+        std::string GetWeatherTemplate(const std::string& city);
+        
+        
+    private:
+        TWeatherModule WeatherModule;
         
     };
 
@@ -84,5 +91,6 @@ namespace NRequest {
 
 
 #endif
+
 
 #define REQUEST_MANAGER_HEADER

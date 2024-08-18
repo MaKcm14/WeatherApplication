@@ -5,7 +5,7 @@
 
 namespace NRequest {
 
-    /// @brief Exceptions specially for request actions (include cache's actions)
+    /// @brief Exceptions specially for request actions (including cache's actions)
     /// ~ error's id classification:
     /// - 400 - client's errors:
     ///       - 401: (invalid data)
@@ -28,6 +28,7 @@ namespace NRequest {
         {
         }
 
+
         int32_t GetErrorId() const noexcept {
             return ErrorId;
         }
@@ -35,6 +36,7 @@ namespace NRequest {
         const char* what() const noexcept override {
             return What.c_str();
         }
+
 
     private:
         std::string What;
@@ -46,5 +48,6 @@ namespace NRequest {
 
 
 #endif
+
 
 #define REQUEST_EXCEPTION_HEADER

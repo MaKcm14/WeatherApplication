@@ -134,7 +134,7 @@ std::string NWeather::TWeatherService::PostQueryHandler(const std::string& resou
         std::string city = data.substr(data.find("=") + 1);
 
         if (cache.IsDataExpired(city)) {
-            weather = request.GetWeather(city);
+            weather = request.GetWeatherTemplate(city);
             cache.InsertOrUpdateData(city, weather);
                     
         } else {

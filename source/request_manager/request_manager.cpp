@@ -6,10 +6,6 @@ namespace NRequest {
     nlohmann::json configJson;
 }
 
-namespace NWeather {
-    extern std::mutex serviceMut;
-}
-
 
 void NRequest::InitConfig() {
     std::ifstream configStream("../configuration.json");
@@ -37,17 +33,17 @@ void NRequest::InitConfig() {
 }
 
 
-void NRequest::InitNetParams() {
+void NRequest::TWeatherModule::InitWeatherEndpoints() {
     logger << TLevel::Info << "began receiving the ip from resolver for 'api.openweathermap.org'\n";
 
     try {
-        boost::asio::ip::tcp::resolver resolver(TRequestManager::RequestService);
+        boost::asio::ip::tcp::resolver resolver(TWeatherModule::RequestService);
         boost::asio::ip::tcp::resolver::query query("api.openweathermap.org", "80");
         boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
         
         logger << TLevel::Info << "got ip for domen 'api.openweathermap.org' from resolver\n";
        
-        TRequestManager::EpWeatherRequest = std::move(*iter);
+        TWeatherModule::EpOpenWeatherRequest = std::move(*iter);
 
     } catch (boost::system::system_error& excp) {
         logger << TLevel::Fatal << "~ InitNetParams() error: " << excp.what() << "\n\n";
@@ -56,12 +52,12 @@ void NRequest::InitNetParams() {
 }
 
 
-void NRequest::TRequestManager::InitApiKey() {
+void NRequest::TWeatherModule::InitWeatherApiKey() {
     logger << TLevel::Info << "began initializing the ApiKey for the 'api.openweathermap.org'\n";
 
     try {
-        std::string apiKeyStr = configJson.at("API_KEY").dump();
-        TRequestManager::ApiKey = std::move(apiKeyStr.substr(1, apiKeyStr.size() - 2));
+        std::string openWeatherKey = configJson.at("API_KEY").at("api.openweathermap.org").dump();
+        TWeatherModule::OpenWeatherApiKey = std::move(openWeatherKey.substr(1, openWeatherKey.size() - 2));
 
     } catch (nlohmann::json::type_error& typeExcp) {
         logger << TLevel::Fatal;
@@ -88,25 +84,18 @@ void NRequest::TRequestManager::InitApiKey() {
 
 void NRequest::ConfigureRequestService() {
     InitConfig();
-    InitNetParams();
-    TRequestManager::InitApiKey();
+    TWeatherModule::InitWeatherEndpoints();
+    TWeatherModule::InitWeatherApiKey();
 }
 
 
-NRequest::TRequestManager::TRequestManager()
+NRequest::TWeatherModule::TWeatherModule()
     : SocketWeath(RequestService)
 {
 }
 
 
-NRequest::TRequestManager::TRequestManager(const std::string& city)
-    : SocketWeath(RequestService)
-    , City(city)
-{
-}
-
-
-std::string NRequest::TRequestManager::GetMmHg(std::string pressure) const {
+std::string NRequest::TConverter::ConvertPascalsToMmHg(std::string pressure) const {
     double press;
     std::istringstream pressIn(std::move(pressure));
     std::ostringstream pressOut;
@@ -119,7 +108,7 @@ std::string NRequest::TRequestManager::GetMmHg(std::string pressure) const {
 }
 
 
-std::string NRequest::TRequestManager::GetCelsus(std::string temp) const {
+std::string NRequest::TConverter::ConvertKelvinsToCelsus(std::string temp) const {
     double tempNum;
     std::istringstream tempIn(std::move(temp));
     std::ostringstream tempOut;
@@ -132,46 +121,46 @@ std::string NRequest::TRequestManager::GetCelsus(std::string temp) const {
 }
 
 
-std::string NRequest::TRequestManager::GetUrlCityView() const {
-    std::string urlCityView;
+std::string NRequest::TConverter::ConvertToUrlView(const std::string& obj) const {
+    std::string urlObjView;
     
-    for (const auto& elem : City) {
+    for (const auto& elem : obj) {
         if (elem == ' ') {
-            urlCityView += "+";
+            urlObjView += "+";
         } else {
-            urlCityView.push_back(elem);
+            urlObjView.push_back(elem);
         }
     }
 
-    return urlCityView;
+    return urlObjView;
 }
 
 
-void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) {
+std::string NRequest::TConverter::ConvertWeatherJsonToWeatherTemplate(const nlohmann::json& weathJson) {
     logger << TLevel::Debug << "the creation of the weather description has begun\n";
 
-    WeatherDesc.clear();
+    std::string weatherDesc;
 
     try {
-        WeatherDesc += "<br>- Basic Weather Description: ";
-        WeatherDesc += weathJson.at("weather").at(0).at("description").dump() + "</br>";
+        weatherDesc += "<br>- Basic Weather Description: ";
+        weatherDesc += weathJson.at("weather").at(0).at("description").dump() + "</br>";
 
-        WeatherDesc += "<br>- Temperature (C): ";
-        WeatherDesc += GetCelsus(weathJson.at("main").at("temp").dump()) + "</br>";
+        weatherDesc += "<br>- Temperature (C): ";
+        weatherDesc += ConvertKelvinsToCelsus(weathJson.at("main").at("temp").dump()) + "</br>";
 
-        WeatherDesc += "<br>- Temperature \"feels_like\" (C): ";
-        WeatherDesc += GetCelsus(weathJson.at("main").at("feels_like").dump()) + "</br>";
+        weatherDesc += "<br>- Temperature \"feels_like\" (C): ";
+        weatherDesc += ConvertKelvinsToCelsus(weathJson.at("main").at("feels_like").dump()) + "</br>";
 
-        WeatherDesc += "<br>- Pressure (mmHg): ";
-        WeatherDesc += GetMmHg(weathJson.at("main").at("pressure").dump()) + "</br>";
+        weatherDesc += "<br>- Pressure (mmHg): ";
+        weatherDesc += ConvertPascalsToMmHg(weathJson.at("main").at("pressure").dump()) + "</br>";
 
-        WeatherDesc += "<br>- Wind (speed/gust m/s): ";
-        WeatherDesc += weathJson.at("wind").at("speed").dump() + "/";
+        weatherDesc += "<br>- Wind (speed/gust m/s): ";
+        weatherDesc += weathJson.at("wind").at("speed").dump() + "/";
 
         if (weathJson.at("wind").contains("gust")) {
-            WeatherDesc += weathJson.at("wind").at("gust").dump() + "</br>";
+            weatherDesc += weathJson.at("wind").at("gust").dump() + "</br>";
         } else {
-            WeatherDesc += "0</br>";
+            weatherDesc += "0</br>";
         }
 
     } catch (nlohmann::json::type_error& typeExcp) {
@@ -186,10 +175,12 @@ void NRequest::TRequestManager::SetWeatherDesc(const nlohmann::json& weathJson) 
     }
 
     logger << TLevel::Debug << "the weather description was successfully made\n\n";
+
+    return weatherDesc;
 }
 
 
-std::string NRequest::TRequestManager::GetWeatherJson() {
+std::string NRequest::TWeatherModule::GetWeatherJson() {
     std::string weathBuff(4096, '\0');
 
     logger << TLevel::Debug << "began sending the request to 'api.openweathermap.org' ";
@@ -199,15 +190,15 @@ std::string NRequest::TRequestManager::GetWeatherJson() {
         std::string url = "https://api.openweathermap.org/data/2.5/weather?q=";
         std::ostringstream requestStream;
 
-        url += GetUrlCityView() + ",RU";
+        url += Converter.ConvertToUrlView(City) + ",RU";
         url += "&appid=";
-        url += ApiKey;
+        url += OpenWeatherApiKey;
 
-        SocketWeath.connect(TRequestManager::EpWeatherRequest);
+        SocketWeath.connect(TWeatherModule::EpOpenWeatherRequest);
 
         requestStream << "GET " << url << "\r\n";
         requestStream << "Host: api.openweathermap.org\r\n";
-        requestStream << "APPID: " << ApiKey << "\r\n";
+        requestStream << "APPID: " << OpenWeatherApiKey << "\r\n";
         requestStream << "\r\n\r\n";
 
         SocketWeath.write_some(boost::asio::buffer(requestStream.str()));
@@ -242,7 +233,7 @@ std::string NRequest::TRequestManager::GetWeatherJson() {
 }
 
 
-std::string NRequest::TRequestManager::GetWeatherService(const std::string& city) {
+std::string NRequest::TWeatherModule::TryGetWeatherTemplate(const std::string& city) {
      if (city.empty()) {
         logger << TLevel::Error << "~ GetWeatherService() error: the City is empty: incorrect data\n\n";
         throw TRequestException("the member City is empty", 401);    
@@ -263,7 +254,7 @@ std::string NRequest::TRequestManager::GetWeatherService(const std::string& city
             throw TRequestException("the code status for the weather description isn't 200 (not OK)",
                 404);
         }
-        SetWeatherDesc(weathJson);
+        WeatherDesc = std::move(Converter.ConvertWeatherJsonToWeatherTemplate(weathJson));
 
     } catch (nlohmann::json::parse_error& parseExcp) {
         WeatherDesc.clear();
@@ -289,23 +280,13 @@ std::string NRequest::TRequestManager::GetWeatherService(const std::string& city
 }
 
 
-std::string NRequest::TRequestManager::GetWeatherService() {
-    if (!City.empty()) {
-        return GetWeatherService(City);
-
-    } else {
-        logger << TLevel::Error << "~ GetWeatherService() error: the City is empty: incorrect data\n\n";
-        throw TRequestException("the member City is empty", 401);
-    }
-}
-
-
-std::string NRequest::TRequestManager::GetWeather(const std::string& city) {
+std::string NRequest::TRequestManager::GetWeatherTemplate(const std::string& city) {
     logger << TLevel::Debug << "the request_manager-service started receiving\n";
 
+    std::string weathDesc;
     for (bool noThrow = false; !noThrow; ) {
         try {
-            GetWeatherService(city);
+            weathDesc = std::move(WeatherModule.TryGetWeatherTemplate(city));
             noThrow = true;
 
         } catch (NRequest::TRequestException& excp) {
@@ -319,29 +300,5 @@ std::string NRequest::TRequestManager::GetWeather(const std::string& city) {
     }
     logger << TLevel::Debug << "the request_manager-service stopped receiving\n";
 
-    return WeatherDesc;
-}
-
-
-std::string NRequest::TRequestManager::GetWeather() {
-    logger << TLevel::Debug << "the request_manager-service started receiving\n";
-
-    for (bool noThrow = false; !noThrow; ) {
-        try {
-            GetWeatherService();
-            noThrow = true;
-
-        } catch (NRequest::TRequestException& excp) {
-            if (excp.GetErrorId() >= 400 && excp.GetErrorId() <= 499 || excp.GetErrorId() == 501) {
-                throw;
-            }
-
-        } catch (...) {
-            throw;
-        }
-    }
-
-    logger << TLevel::Debug << "the request_manager-service stopped receiving\n";
-
-    return WeatherDesc;
+    return weathDesc;
 }

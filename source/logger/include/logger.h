@@ -1,10 +1,9 @@
 #ifndef LOGGER_HEADER
 
 #    include <fstream>
-#    include <mutex>
 #    include <thread>
 
-/// @brief Simple logger class for make notes about events in the programme
+/// @brief simple logger class for make notes about events in the programme
 class TLogger {
 public:
     enum ELevel {

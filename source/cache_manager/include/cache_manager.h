@@ -19,7 +19,7 @@ namespace NRequest {
 
     extern void ConfigureRequestService();
 
-    /// @brief check the data that was got from the DB (the part of the TCacheManager) 
+    /// @brief checks the data that was got from the DB (the part of the TCacheManager) 
     class TDataChecker {
     public:
         bool IsDataSafety(const std::string& city) const;
@@ -27,7 +27,7 @@ namespace NRequest {
     };
 
 
-    /// @brief make notes (weather description) in the DB and get out the description from the DB
+    /// @brief makes notes (weather description) in the DB and get out the description from the DB
     class TCacheManager {
     private:
         struct TCityNote {
@@ -52,12 +52,12 @@ namespace NRequest {
         TCacheManager(std::unique_ptr<NDataBase::TDataBase> dataBase);
         
 
+        std::string GetData(const std::string& city);
+
         bool IsDataExpired(const std::string& city);
 
         void InsertOrUpdateData(const std::string& city, const std::string& weathDesc);
-
-        std::string GetData(const std::string& city);
-    
+        
 
     private:
         std::string GetCurTimeWithShift(int32_t shift) const;

@@ -2,10 +2,6 @@
 
 TLogger logger;
 
-namespace NWeather {
-    std::mutex serviceMut;
-}
-
 int main(int argc, char* argv[]) {
     NRequest::ConfigureRequestService();
     ::testing::InitGoogleTest(&argc, argv);

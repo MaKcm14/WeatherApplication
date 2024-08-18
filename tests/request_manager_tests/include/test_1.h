@@ -5,7 +5,7 @@
 TEST(Request_Manager_Tests, City_Moscow) {
     NRequest::TRequestManager request;
     try {
-        request.GetWeather("Moscow");
+        request.GetWeatherTemplate("Moscow");
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
@@ -22,7 +22,7 @@ TEST(Request_Manager_Tests, City_Moscow) {
 TEST(Request_Manager_Tests, City_Kazan) {
     NRequest::TRequestManager request;
     try {
-        request.GetWeather("Kazan");
+        request.GetWeatherTemplate("Kazan");
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
@@ -39,7 +39,7 @@ TEST(Request_Manager_Tests, City_Kazan) {
 TEST(Request_Manager_Tests, City_Saint_Petersburg) {
     NRequest::TRequestManager request;
     try {
-        request.GetWeather("Saint Petersburg");
+        request.GetWeatherTemplate("Saint Petersburg");
 
     } catch (NRequest::TRequestException& excp) {
         std::cerr << excp.what() << std::endl;
