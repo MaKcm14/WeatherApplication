@@ -20,7 +20,7 @@ namespace NRequest {
     void ConfigureRequestService();
 
     /// @brief makes converting for different objects
-    class TConverter {
+    class TWeatherModuleConverter {
     public:
         std::string ConvertToUrlView(const std::string& obj) const;
 
@@ -67,7 +67,7 @@ namespace NRequest {
         inline static boost::asio::ip::tcp::endpoint EpOpenWeatherRequest;
 
     private:
-        TConverter Converter;
+        TWeatherModuleConverter Converter;
         TTcpSocket SocketWeath;
         std::string City;
         std::string WeatherDesc;

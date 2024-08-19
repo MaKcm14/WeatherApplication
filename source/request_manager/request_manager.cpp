@@ -96,7 +96,7 @@ NRequest::TWeatherModule::TWeatherModule()
 }
 
 
-std::string NRequest::TConverter::ConvertPascalsToMmHg(std::string pressure) const {
+std::string NRequest::TWeatherModuleConverter::ConvertPascalsToMmHg(std::string pressure) const {
     double press;
     std::istringstream pressIn(std::move(pressure));
     std::ostringstream pressOut;
@@ -109,7 +109,7 @@ std::string NRequest::TConverter::ConvertPascalsToMmHg(std::string pressure) con
 }
 
 
-std::string NRequest::TConverter::ConvertKelvinsToCelsus(std::string temp) const {
+std::string NRequest::TWeatherModuleConverter::ConvertKelvinsToCelsus(std::string temp) const {
     double tempNum;
     std::istringstream tempIn(std::move(temp));
     std::ostringstream tempOut;
@@ -122,7 +122,7 @@ std::string NRequest::TConverter::ConvertKelvinsToCelsus(std::string temp) const
 }
 
 
-std::string NRequest::TConverter::ConvertToUrlView(const std::string& obj) const {
+std::string NRequest::TWeatherModuleConverter::ConvertToUrlView(const std::string& obj) const {
     std::string urlObjView;
     
     for (const auto& elem : obj) {
@@ -137,7 +137,7 @@ std::string NRequest::TConverter::ConvertToUrlView(const std::string& obj) const
 }
 
 
-std::string NRequest::TConverter::ConvertWeatherJsonToWeatherTemplate(const nlohmann::json& weathJson) const {
+std::string NRequest::TWeatherModuleConverter::ConvertWeatherJsonToWeatherTemplate(const nlohmann::json& weathJson) const {
     logger << TLevel::Debug << "the creation of the weather description for weather template has begun\n";
 
     std::string weatherDesc;

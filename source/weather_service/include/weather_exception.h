@@ -14,18 +14,20 @@ namespace NWeather {
     class TWeatherException : std::exception {
     public:
         TWeatherException(const std::string& what, int32_t errorId)
-        : What(what)
-        , ErrorId(errorId)
+            : What(what)
+            , ErrorId(errorId)
         {
+        }
+
+
+        int32_t GetErrorId() const noexcept {
+            return ErrorId;
         }
 
         const char* what() const noexcept override {
             return What.c_str();
         }
 
-        int32_t GetErrorId() const noexcept {
-            return ErrorId;
-        }
 
     private:
         std::string What;
@@ -35,6 +37,8 @@ namespace NWeather {
 
 }
 
+
 #endif
+
 
 #define WEATHER_EXCEPTIN_HEADER
