@@ -8,11 +8,13 @@ namespace NRequest {
 
 namespace NWeather {
     std::atomic<bool> criticalError = false;
+    std::mutex serviceMut;
 }
 
 
 /// @brief converts the weather description in the html format 
 std::string NWeather::TQueryConverter::ConvertWeatherToHtml(const std::string& weather) const {
+    std::lock_guard<std::mutex> converterLock(serviceMut);
     std::ifstream htmlTemplateStream("../source/weather_service/resource/weather_template.txt");
     std::string weatherHtmlPage;
 
@@ -79,6 +81,7 @@ std::string NWeather::TGetMethod::IProcessRequest(const TQueryHandler::TQueryPar
     std::ifstream resourceStream;
 
     try {
+        std::lock_guard<std::mutex> getLock(serviceMut);
         resourceStream.open(std::string("../source/weather_service/resource") + 
             TQueryHandler::TQueryParams::ResourcesToFiles.at(query.Resource));
     
@@ -124,9 +127,13 @@ std::string NWeather::TPostMethod::WeatherResourceHandler(const TQueryHandler::T
     try {
         NRequest::TRequestManager request;
 
+        serviceMut.lock();
+
         logger << TLevel::Info << "set connection to the DB\n";
         NRequest::TCacheManager cache(std::make_unique<NDataBase::TPostgreSql>("127.0.0.1", "5432", 
             NRequest::configJson.at("db_password").dump()));
+        
+        serviceMut.unlock();
 
         std::string city = query.Data.substr(query.Data.find("=") + 1);
 
@@ -232,7 +239,7 @@ std::string NWeather::TPostMethod::IProcessRequest(const TQueryHandler::TQueryPa
 
     if (query.Resource == "/weather") {
         queryRes = std::move(WeatherResourceHandler(query));
-        
+
     } else {
         logger << TLevel::Warning << "the resource in the 'POST' query doesn't exist: '";
         logger << query.Resource << "'\n\n";
@@ -262,9 +269,11 @@ std::string NWeather::TQueryHandler::FormResponse(const std::string& query) cons
     TQueryHandler::TQueryParams queryParams = ParseQuery(query);
 
     if (queryParams.Method == "GET") {
+        std::lock_guard<std::mutex> getLock(serviceMut);
         methodHandler = std::make_unique<TGetMethod>();
 
     } else if (queryParams.Method == "POST") {
+        std::lock_guard<std::mutex> getLock(serviceMut);
         methodHandler = std::make_unique<TPostMethod>();
 
     } else {
@@ -338,22 +347,25 @@ void NWeather::TWeatherService::RunService() {
 
             try {
                 weatherAcceptor.accept(*newClientSock);
-                //std::thread(ThreadServeClient, std::move(newClientSock)).detach();
-                ThreadServeClient(std::move(newClientSock));
+                std::thread(ThreadServeClient, std::move(newClientSock)).detach();
+                //ThreadServeClient(std::move(newClientSock));
 
                 if (criticalError) {
+                    std::lock_guard<std::mutex> excpLock(serviceMut);
                     logger << TLevel::Fatal << "the critical error was generated\n\n";
                     logger << "-------------------\nSERVICE IS DOWN\n";
                     break;
                 }
 
             } catch (boost::system::system_error& excp) {
+                std::lock_guard<std::mutex> excpLock(serviceMut);
                 std::cerr << "Error\n";
                 logger << TLevel::Fatal << "the acceptor generated the fatal error: " << excp.what() << "\n\n";
                 logger << "-------------------\nSERVICE IS DOWN\n";
                 break;
 
             } catch (...) {
+                std::lock_guard<std::mutex> excpLock(serviceMut);
                 std::cerr << "Error\n";
                 logger << TLevel::Fatal << "the unpredictable error was generated\n\n";
                 logger << "-------------------\nSERVICE IS DOWN\n";
@@ -362,6 +374,7 @@ void NWeather::TWeatherService::RunService() {
         }
 
     } catch (boost::system::system_error& excp) {
+        std::lock_guard<std::mutex> excpLock(serviceMut);
         std::cerr << "Error";
         logger << TLevel::Fatal << "~ RunService() error: the fatal error was generated: " << excp.what() << "\n\n";
         logger << "-------------------\n";

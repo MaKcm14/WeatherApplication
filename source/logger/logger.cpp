@@ -7,6 +7,8 @@ TLogger::TLogger()
 
 
 TLogger& operator << (TLogger& logger, const TLogger::ELevel& lev) {
+    std::lock_guard<std::mutex> logLock(logger.LogMut);
+
     logger.LogOut << "# id: " << std::this_thread::get_id() << ":\t";
     if (lev == TLevel::Debug) {
         logger.LogOut << "[Debug]: ";
@@ -23,5 +25,6 @@ TLogger& operator << (TLogger& logger, const TLogger::ELevel& lev) {
     } else if (lev == TLevel::Fatal) {
         logger.LogOut << "[Fatal]: ";
     }
+    
     return logger;
 }

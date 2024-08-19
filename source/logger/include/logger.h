@@ -1,6 +1,7 @@
 #ifndef LOGGER_HEADER
 
 #    include <fstream>
+#    include <mutex>
 #    include <thread>
 
 /// @brief simple logger class for make notes about events in the programme
@@ -16,11 +17,13 @@ public:
 
 private:
     std::ofstream LogOut;
+    std::mutex LogMut;
 
 public:
     TLogger();
 
     ~TLogger() {
+        std::lock_guard<std::mutex> logLock(LogMut);
         LogOut.close();
     }
 
@@ -37,6 +40,7 @@ using TLevel = TLogger::ELevel;
 
 template <typename TType>
 TLogger& operator << (TLogger& logger, const TType& data) {
+    std::lock_guard<std::mutex> logLock(logger.LogMut);
     logger.LogOut << data;
     return logger;
 }
