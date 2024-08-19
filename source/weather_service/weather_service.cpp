@@ -8,7 +8,6 @@ namespace NRequest {
 
 namespace NWeather {
     std::atomic<bool> criticalError = false;
-    std::mutex serviceMut;
 }
 
 
@@ -40,7 +39,6 @@ NWeather::TQueryHandler::TQueryParams NWeather::TQueryHandler::ParseQuery(const 
     TQueryParams queryParam;
 
     queryParam.Method = query.substr(0, query.find(" "));
-
     queryParam.Resource = query.substr(query.find(" ") + 1, query.find(" ", query.find(" ") + 1) - 
         query.find(" ") - 1);
 
@@ -144,7 +142,8 @@ std::string NWeather::TPostMethod::WeatherResourceHandler(const TQueryHandler::T
 
     } catch (NRequest::TRequestException& excp) {
         if (excp.GetErrorId() == 401 || excp.GetErrorId() == 404 || excp.GetErrorId() == 405) {
-            logger << TLevel::Error << "~ PostQueryHandler() error: the wrong data was got: " << excp.what() << "\n\n";
+            logger << TLevel::Error << "~ WeatherResourceHandler() error: the wrong data was got: ";
+            logger << excp.what() << "\n\n";
 
             queryPostResponse << TQueryHandler::TQueryParams::ErrorCodesAndResponses.at("400");
             queryPostResponse << "Content-Length: " << 177 << "\r\n\r\n";
@@ -154,7 +153,7 @@ std::string NWeather::TPostMethod::WeatherResourceHandler(const TQueryHandler::T
             return queryPostResponse.str();
 
         } else if (excp.GetErrorId() == 501) {
-            logger << TLevel::Fatal << "~ PostQueryHandler() error: the meteo-server has problem: ";
+            logger << TLevel::Fatal << "~ WeatherResourceHandler() error: the meteo-server has problem: ";
             logger << excp.what() << "\n\n";
 
             queryPostResponse << TQueryHandler::TQueryParams::ErrorCodesAndResponses.at("502");
@@ -163,7 +162,7 @@ std::string NWeather::TPostMethod::WeatherResourceHandler(const TQueryHandler::T
                 "<p>The meteo-server has problem. Please try again later.</p></body></html>\r\n";
             
         } else {
-            logger << TLevel::Error << "~ PostQueryHandler() error: internal server error was generated: ";
+            logger << TLevel::Error << "~ WeatherResourceHandler() error: internal server error was generated: ";
             logger << excp.what() << "\n\n";
 
             queryPostResponse << TQueryHandler::TQueryParams::ErrorCodesAndResponses.at("500");
@@ -184,7 +183,7 @@ std::string NWeather::TPostMethod::WeatherResourceHandler(const TQueryHandler::T
         return queryPostResponse.str();
 
     } catch (NDataBase::TDataBaseException& excp) {
-        logger << TLevel::Fatal << "~ PostQueryHandler() error: internal server error was generated (DB): ";
+        logger << TLevel::Fatal << "~ WeatherResourceHandler() error: internal server error was generated (DB): ";
         logger << excp.what() << "\n\n";
 
         criticalError = true;
@@ -199,7 +198,7 @@ std::string NWeather::TPostMethod::WeatherResourceHandler(const TQueryHandler::T
         return queryPostResponse.str();
 
     } catch (...) {
-        logger << TLevel::Fatal << "~ PostQueryHandler() error: the unpredictable error was generated\n\n";
+        logger << TLevel::Fatal << "~ WeatherResourceHandler() error: the unpredictable error was generated\n\n";
 
         criticalError = true;
 
@@ -233,6 +232,19 @@ std::string NWeather::TPostMethod::IProcessRequest(const TQueryHandler::TQueryPa
 
     if (query.Resource == "/weather") {
         queryRes = std::move(WeatherResourceHandler(query));
+        
+    } else {
+        logger << TLevel::Warning << "the resource in the 'POST' query doesn't exist: '";
+        logger << query.Resource << "'\n\n";
+
+        std::ostringstream queryPostResponse;
+
+        queryPostResponse << TQueryHandler::TQueryParams::ErrorCodesAndResponses.at("404");
+        queryPostResponse << "Content-Length: " << 150 << "\r\n\r\n";
+        queryPostResponse << "<html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1>" \
+                    "<p>The requested resource was not found on this server.</p></body></html>\r\n";
+        
+        queryRes = std::move(queryPostResponse.str());
     }
 
     logger << TLevel::Debug << "handling the 'POST' query for the resource '" << query.Resource;
@@ -268,6 +280,8 @@ std::string NWeather::TQueryHandler::FormResponse(const std::string& query) cons
         
         return queryResponse.str();
     }
+
+    logger << TLevel::Debug << "forming the response finished correctly\n\n";
 
     return methodHandler->IProcessRequest(queryParams);
 }
@@ -319,8 +333,7 @@ void NWeather::TWeatherService::RunService() {
         boost::asio::ip::tcp::endpoint weatherServiceEp(boost::asio::ip::address::from_string("127.0.0.1"), 80);
         boost::asio::ip::tcp::acceptor weatherAcceptor(weatherService, weatherServiceEp);
 
-        ///DEBUG: make while (true) loop after adding the multithreading
-        for (size_t i = 0; i != 50; ++i) {
+        while (true) {
             std::unique_ptr<TTcpSocket> newClientSock = std::make_unique<TTcpSocket>(weatherService);
 
             try {
