@@ -28,7 +28,7 @@ namespace NRequest {
 
         std::string ConvertKelvinsToCelsus(std::string temp) const;
 
-        std::string ConvertWeatherJsonToWeatherTemplate(const nlohmann::json& weathJson);
+        std::string ConvertWeatherJsonToWeatherTemplate(const nlohmann::json& weathJson) const;
 
     };
 
