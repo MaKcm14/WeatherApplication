@@ -19,7 +19,25 @@ The application has *three main classes:*
 
 ![](https://github.com/MaKcm14/Weather_Application/blob/master/weather_application_architecture_schema.jpg?raw=true "Architecture of the application")
 
-<hr>
+<h5>Main steps of the interaction:</h5>
+Client send the HTTP-message with GET-methd to get the main /find page and write the desired city in the input field after that the HTTP-message with POST-method.
+This request processes by the weather_service which gets the weather description using the either cache_manager or request_manager module.
+
+<h4>Weather_Service</h4>
+Weather_Service is the main module that manages the request_manager module and cache_manager module.
+It accepts the client's requests to connection and makes main interaction with the client.
+
+<h4>Cache_Manager</h4>
+Due to optimization there are the cache is used in the application. Cache_manager lets make handling the interaction with the cache
+that can save info only on 15 mins after its getting.
+
+<h4>Request_Manager</h4>
+This module makes the interaction with the Meteo_Service (openweathermap.org) through the API (api.openweathermap.org).
+It sends the HTTP-message with GET-method to get the weather in the city that was specified by the client.
+
+<h4>P.S.</h4>
+Every module of this application has own checklists that serve to prevent different unpredictable and innormal situations (as SQP-injection, for example).
+
 <hr>
 <h2>How to install and set the program?</h2>
 <h3>Installing.</h3>
