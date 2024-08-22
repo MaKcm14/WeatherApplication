@@ -1,10 +1,10 @@
 # Weather_Application
-Weather application that lets to get weather for the cities in the Russian Federation.
+Weather application that lets to get the **current** weather for the cities in the Russian Federation.
 <br>
 <hr>
 <hr>
 <h2>Main Description</h2>
-This application in its base configuration can get weather for cities in the Russian Federation.
+This application in its base configuration can get the current weather for cities in the Russian Federation.
 
 <h3>Architecture of the application</h3>
 It's a server-side web-application for getting the weather by request from a client using the Rest-concept (Rest service the second level of the maturity model).
@@ -40,28 +40,76 @@ Every module of this application has own checklists that serve to prevent differ
 
 <hr>
 <h2>How to install and set the program?</h2>
-<h3>Installing.</h3>
-For correct work you need to install the Boost and PostgreSQL libraries. You can install it the same way (Linux):
 
-- sudo apt install libboost-all-dev
+Please ***read everything below here attentively*** because the service has complex installing and setting.
+
+<h3>Installing.</h3>
+
+1. For correct work you need to install the Boost, PostgreSQL and nlohmann-json libraries. You can install it the same way (Linux):
+
+- `sudo apt install libboost-all-dev`
 - https://www.postgresql.org/docs/current/tutorial-install.html
+- https://github.com/nlohmann/json
+
+2. After the installing the main components you need to build the project.
+
+<h5>Use the next commands in the root directory of the repo to build and compile the project</h5>
+
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- If everything is OK: `cmake --build .`
+- Else you need to fix the problems with CMake.
+
+3. After the building and compiling the project you'll see the `main` target in the build directory.
+
+After this steps the code will be ready to setting.
 <br>
 <h3>Setting.</h3>
-For correct work you need to create a 'configuration.json' in the parent directory using the next format:
-<br>
-<br>{
-<br>    "API_KEY" : {
-<br>        "api.openweathermap.org" : "your_api_key_for_this_service"
-<br>    },
-<br>    "db_password" : "your_db_password"
-<br>}
-<br>
-<br>
-For using the tests you need to put the copy of the 'configuration.json' in the parent directory
-of the tests (directory 'test' in 'build').
+<h4>Configuration.json</h4>
+
+Weather_application stores the settings in the `configuration.json`.
+
+It's really ***important file:*** without it you won't be able to use the application.
+
+<h5>Format of the configuration.json:</h5>
+
+```
+{
+  "API_KEY" : {
+                "api.openweathermap.org" : "your_api_key_for_this_service"
+              },
+  "db_password" : "your_db_password"
+}
+```
+
+- The value for key "api.openweathermap.org" is the API key that you need to get from the https://openweathermap.org/current
+- The value for key "db_password" is your password for `postgres` role
+
+<h5>Where the configuration.json must be?</h5>
+
+You need to put this file **in the parent directory relatively the `build` directory.**
+
+<h4>Tests</h4>
+After completing the all steps from the title 'Configuration.json' you need to test all modules to make sure that they have the correct behaviour.
+
+For using the tests **you need to put the 'configuration.json' in the directory `tests`**
+
+For starting the tests you need to complete the next steps:
+- go to the `build` directory
+- `sudo service postgresql start`
+- `ctest`
+
+After starting the tests you can see the result of its completing.
+
+**If all tests complete successfully the service was set correctly.**
+
+<h4>Attention:</h4>
+The Meteo-Service has really great load. Therefore the *request_manager_tests* can be failed. If it failed due to the Meteo-service problems you need to wait and try again later.
+
 <br>
 Log file is in the same directory as main.exe (main). It will be updated in every session you start.
 <br>
 <h2>How to use the application?</h2>
-Before start you need to start the postgresql server.
-For using the weather_application you need to execute the main.exe (main) file that you'll get after compiling the project.
+Here you can find the info about the administrating, using and starting the service.
+
