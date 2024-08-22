@@ -1,5 +1,9 @@
 # Weather_Application
-Weather application that lets to get the **current** weather for the cities in the Russian Federation.
+Modern weather web-applications are complex and has too many functions that are not always need to get fast the current weather in the city or place you want to know.
+
+So if you like simplicity and concept 'nothing extra' this application is for you!
+
+This weather application lets to get the **current** weather for the cities in the Russian Federation.
 <br>
 <hr>
 <hr>
