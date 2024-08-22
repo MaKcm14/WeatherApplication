@@ -42,7 +42,7 @@ This module makes the interaction with the Meteo_Service (openweathermap.org) th
 It sends the HTTP-message with GET-method to get the weather in the city that was specified by the client.
 
 <h4>P.S.</h4>
-Every module of this application has own checklists that serve to prevent different unpredictable and innormal situations (as SQP-injection, for example).
+Every module of this application has own checklists that serve to prevent different unpredictable and innormal situations (as SQL-injection, for example).
 
 <hr>
 <h2>How to install and set the program?</h2>
@@ -135,7 +135,9 @@ After this clients will get the information about the current weather in the des
 
 <h4>Developer's using</h4>
 
-Main file main.cpp has the call of the function `NWeather::TWeatherService::RunService()`
+Main file main.cpp has the call of the function `NWeather::TWeatherService::RunService()` which starts the service.
+
+If you need to change something in the code you can use the description of the the application's architecture.
 
 <h3>How to administer the service?</h3>
 For administration the service has own simple logger. Log file creates after every starting.
@@ -164,3 +166,5 @@ Sometimes description of the events can be saved on several strings.
 <h3>Please pay your attention</h3>
 
 The service works on **port 80** and **ip 127.0.0.1 by default**
+
+Application hasn't got the functionality of the changing the port and ip. To change this parameters you need to change it everything in the code yourself.
