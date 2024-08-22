@@ -1,6 +1,24 @@
 # Weather_Application
-This project can get weather for cities in the Russian Federation.
+Weather application that lets to get weather for the cities in the Russian Federation.
+<br>
+<hr>
+<hr>
+<h2>Main Description</h2>
+This application in its base configuration can get weather for cities in the Russian Federation.
+
+<h3>Architecture of the application</h3>
 It's a server-side web-application for getting the weather by request from a client using the Rest-concept (Rest service the second level of the maturity model).
+The application was developed as expandable web-application with opportunity of adding other HTTP-methods and changing the strcuture of the front-end-part.
+
+The application has *three main classes:*
+- Weather_Service
+- Cache_Manager
+- Request_Manager
+
+<h4>The Schema of application's architecture:</h4>
+
+![](https://github.com/MaKcm14/Weather_Application/blob/master/weather_application_architecture_schema.jpg?raw=true "Architecture of the application")
+
 <hr>
 <hr>
 <h2>How to install and set the program?</h2>
