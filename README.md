@@ -1,4 +1,4 @@
-# Weather_Application
+# WeatherApplication
 Modern weather web-applications are complex and has too many functions that are not always need to get fast the current weather in the city or place you want to know.
 
 So if you like simplicity and concept 'nothing extra' this application is for you!
