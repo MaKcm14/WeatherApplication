@@ -1,3 +1,6 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com
+
 #include "include/data_base.h"
 
 NDataBase::TPostgreSql::TPostgreSql(const std::string& ip, const std::string& port, const std::string& password) {

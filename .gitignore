@@ -3,3 +3,7 @@ info
 Weather_App_Architecture.pdf
 configuration.json
 TODO.txt
+sast_reports
+dast_reports
+.PVS-Studio
+.vscode
